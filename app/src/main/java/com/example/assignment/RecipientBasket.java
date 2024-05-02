@@ -1,2 +1,4 @@
-package com.example.assignment;public class RecipientBasket {
+package com.example.assignment;
+
+public class RecipientBasket {
 }

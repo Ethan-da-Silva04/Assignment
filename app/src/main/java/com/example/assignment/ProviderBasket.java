@@ -1,2 +1,4 @@
-package com.example.assignment;public class ProviderBasket {
+package com.example.assignment;
+
+public class ProviderBasket {
 }
