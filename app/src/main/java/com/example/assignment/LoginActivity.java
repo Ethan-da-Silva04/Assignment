@@ -26,8 +26,10 @@ public class LoginActivity extends AppCompatActivity {
             obj.put("password", "password1@");
             System.out.println("[Sent Object]: " + obj.toString());
             ServerResponse response = WebClient.postJSON("login.php", obj);
-            System.out.println(response.getData().toString());
+            //System.out.println(response.getData().toString());
         } catch (JSONException e) {
+            System.out.println(e);
+        } catch (ServerResponseException e) {
             System.out.println(e);
         }
     }

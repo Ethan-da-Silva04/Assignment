@@ -10,34 +10,34 @@ import okhttp3.Response;
 
 public class ServerResponse {
     private JSONArray data;
-    private String errorMessage;
-    private int responseCode;
+    private int statusCode;
 
-    public ServerResponse(Response response) {
-        this.responseCode = response.code();
+    public ServerResponse(Response response) throws ServerResponseException {
+        this.statusCode = response.code();
 
         try {
             String body = response.body().string();
             if (isError()) {
-                errorMessage = body;
-                return;
+                throw new ServerResponseException(body, statusCode);
             }
             data = new JSONArray(body);
-        } catch (IOException|JSONException e) {
+        } catch (IOException e) {
+            System.out.println(e);
+        } catch (JSONException e) {
             System.out.println(e);
         }
     }
 
     public int getResponseCode() {
-        return responseCode;
+        return statusCode;
     }
 
     public JSONArray getData() { return data; }
 
     public boolean isSuccess() {
-        return 200 <= responseCode && responseCode < 300;
+        return 200 <= statusCode && statusCode < 300;
     }
     public boolean isError() {
-        return 400 <= responseCode && responseCode < 500;
+        return 400 <= statusCode && statusCode < 500;
     }
 }
