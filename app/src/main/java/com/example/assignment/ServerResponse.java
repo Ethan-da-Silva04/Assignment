@@ -10,6 +10,7 @@ import okhttp3.Response;
 
 public class ServerResponse {
     private JSONArray data;
+    private String errorMessage;
     private int responseCode;
 
     public ServerResponse(Response response) {
@@ -17,6 +18,10 @@ public class ServerResponse {
 
         try {
             String body = response.body().string();
+            if (isError()) {
+                errorMessage = body;
+                return;
+            }
             data = new JSONArray(body);
         } catch (IOException|JSONException e) {
             System.out.println(e);

@@ -22,9 +22,10 @@ public class LoginActivity extends AppCompatActivity {
         //EditText password = findViewById(R.id.editTextTextPassword);
         JSONObject obj = new JSONObject();
         try {
-            obj.put("username", "henry");
+            obj.put("username", "henryd");
             obj.put("password", "password1@");
-            ServerResponse response = WebClient.postJSON("example.php", obj);
+            System.out.println("[Sent Object]: " + obj.toString());
+            ServerResponse response = WebClient.postJSON("login.php", obj);
             System.out.println(response.getData().toString());
         } catch (JSONException e) {
             System.out.println(e);

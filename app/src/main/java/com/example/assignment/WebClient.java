@@ -40,9 +40,6 @@ public class WebClient {
             @Override
             public Response call() {
                 try {
-                    Request request = new Request.Builder()
-                            .url(getFullPath(subPath))
-                            .build();
                     Response response = client.newCall(request).execute();
                     return response;
                 } catch (Exception e) {
