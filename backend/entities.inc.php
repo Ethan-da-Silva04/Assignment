@@ -10,7 +10,7 @@ class Account
 	public string $phone_number;
 	public DateTime $created_at;
 
-	public function __construct(int $id, string $username, string $biography, string $phone_number, DateTime $created_at) 
+	private function __construct(int $id, string $username, string $biography, string $phone_number, DateTime $created_at) 
 	{
 		$this->id = $id;
 		$this->username = $username;
@@ -19,14 +19,86 @@ class Account
 		$this->created_at = $created_at;
 	}
 
-	public static function register(string $username, string $password, string $biography, string $phone_number): void
+	private static function validate_user_registry_input(mixed $username, mixed $password, mixed $biography, mixed $phone_number): void
 	{
-		// stuff goes here, this should handle the data validation stuff
+		require_once 'user_input.inc.php';
+		require_once 'query.php';
+		require_once "error.inc.php";
+		validate_username($username);
+		validate_password($password);
+		validate_biography($biography);
+		validate_phone_number($phone_number);
+
 	}
 
-	public static function is_authenticated(): bool
+	private static function validate_user_login_input(mixed $username, mixed $password): void
 	{
-		return false;
+		require_once 'user_input.inc.php';
+		require_once 'query.php';
+		require_once "error.inc.php";
+		validate_username($username);
+		validate_password($password);
+	}
+
+	public static function register(mixed $username, mixed $password, mixed $biography, mixed $phone_number): self|false
+	{
+		require_once "error.inc.php";
+		if (self::is_logged_in())
+		{
+			exit_with_status(message: "Already logged in.", status_code: 400);
+		}
+
+		self::validate_user_registry_input($username, $password, $biography, $phone_number);
+		$hashed_password = password_hash(password: $password, algo: PASSWORD_DEFAULT);
+
+		$created_at = new DateTime();
+		$query_string = "INSERT INTO Accounts VALUES(NULL, ?, ?, ?, ?, NOW())";
+		$id = Database::insert(DatabaseQuery::from_string($query_string), "ssss", $username, $hashed_password, $phone_number, $biography);
+		
+		if (!$id)
+		{
+			exit_with_status(message: "Username already exists.", status_code: 400);	
+		}
+		
+		return $_SESSION["__user"] = new self($id, $username, $biography, $phone_number, $created_at);
+	}
+
+	public static function is_logged_in(): bool
+	{
+		return isset($_SESSION["__user"]);
+	}
+
+	public static function login(mixed $username, mixed $password): self|false
+	{
+		require_once "error.inc.php";
+		if (self::is_logged_in())
+		{
+			exit_with_status(message: "Already logged in.", status_code: 400);
+		}
+
+		self::validate_user_login_input($username, $password);
+		$hashed_password = password_hash(password: $password, algo: PASSWORD_DEFAULT);
+		
+		$result_set = Database::select(DatabaseQuery::from_string("SELECT * FROM Accounts WHERE username = ?;"), "s", $username);
+		$fst_row = $result_set->fetch_assoc();
+
+		if (!$fst_row) 
+		{
+			exit_with_status("Account does not exist.", status_code: 400);
+		}
+
+		if (!password_verify(password: $password, hash: $fst_row["password_hash"]))
+		{
+			exit_with_status("Incorrect password.", status_code: 400);
+		}
+
+		return $_SESSION["__user"] = new self(
+			$fst_row["id"], 
+			$fst_row["username"], 
+			$fst_row["biography"], 
+			$fst_row["phone_number"], 
+			DateTime::createFromFormat('Y-m-d H:i:s', $fst_row["created_at"])
+		);
 	}
 }
 

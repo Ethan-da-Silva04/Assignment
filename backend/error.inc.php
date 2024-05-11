@@ -14,4 +14,15 @@ function expect_request_method(string $request_method)
 
 	exit_with_status(message: "Method not allowed.", status_code: 405);
 }
+
+function expect_post()
+{
+	expect_request_method("POST");
+}
+
+function expect_get()
+{
+	expect_request_method("GET");
+}
+
 ?>
