@@ -4,13 +4,13 @@
 
 class Account 
 {
-	public $id;
-	public $username;
-	public $biography;
-	public $phone_number;
-	public $created_at;
+	public int $id;
+	public string $username;
+	public string $biography;
+	public string $phone_number;
+	public DateTime $created_at;
 
-	public function __construct($id, $username, $biography, $phone_number, $created_at) 
+	public function __construct(int $id, string $username, string $biography, string $phone_number, DateTime $created_at) 
 	{
 		$this->id = $id;
 		$this->username = $username;
@@ -19,12 +19,12 @@ class Account
 		$this->created_at = $created_at;
 	}
 
-	public static function register($username, $password, $biography, $phone_number)
+	public static function register(string $username, string $password, string $biography, string $phone_number): void
 	{
-		// stuff goes here
+		// stuff goes here, this should handle the data validation stuff
 	}
 
-	public static function is_authenticated()
+	public static function is_authenticated(): bool
 	{
 		return false;
 	}
@@ -32,13 +32,13 @@ class Account
 
 class AccountReport 
 {
-	public $id;
-	public $reported_id;
-	public $reporter_id;
-	public $description;
-	public $created_at;
+	public int $id;
+	public int $reported_id;
+	public int $reporter_id;
+	public string $description;
+	public DateTime $created_at;
 
-	public function __construct($id, $reported_id, $reporter_id, $description, $created_at) 
+	public function __construct(int $id, int $reported_id, int $reporter_id, string $description, DateTime $created_at) 
 	{
 		$this->id = $id;
 		$this->reported_id = $reported_id;
@@ -50,11 +50,11 @@ class AccountReport
 
 class Entry 
 {
-	public $id;
-	public $resource_id;
-	public $quantity;
+	public int $id;
+	public int $resource_id;
+	public int $quantity;
 
-	protected function __construct($id, $resource_id, $quantity) 
+	protected function __construct(int $id, int $resource_id, int $quantity) 
 	{
 		$this->id = $id;
 		$this->resource_id = $resource_id;
@@ -64,9 +64,9 @@ class Entry
 
 class DonationPageEntry extends Entry 
 {
-	public $page_id;
+	public int $page_id;
 
-	public function __construct($id, $resource_id, $quantity, $page_id) 
+	public function __construct(int $id, int $resource_id, int $quantity, int $page_id) 
 	{
 		Entry::__construct($id, $resource_id, $quantity);
 		$this->page_id = $page_id;
@@ -75,13 +75,13 @@ class DonationPageEntry extends Entry
 
 class DonationPage 
 {
-	public $id;
-	public $donatee_id;
-	public $name;
-	public $description;
-	public $created_at;
+	public int $id;
+	public int $donatee_id;
+	public string $name;
+	public string $description;
+	public DateTime $created_at;
 
-	public function __construct($id, $donatee_id, $name, $description, $created_at)
+	public function __construct(int $id, int $donatee_id, string $name, string $description, DateTime $created_at)
 	{
 		$this->id = $id;
 		$this->donatee_id = $donatee_id;
@@ -94,8 +94,8 @@ class DonationPage
 
 class DonationPostEntry extends Entry 
 {
-	public $post_id;
-	public function __construct($id, $resource_id, $quantity, $post_id) 
+	public int $post_id;
+	public function __construct(int $id, int $resource_id, int $quantity, int $post_id) 
 	{
 		Entry::__construct($id, $resource_id, $quantity);
 		$this->post_id = $post_id;
@@ -104,12 +104,12 @@ class DonationPostEntry extends Entry
 
 class DonationPost 
 {
-	public $id;
-	public $poster_id;
-	public $recipient_id;
-	public $created_at;
+	public int $id;
+	public int $poster_id;
+	public int $recipient_id;
+	public DateTime $created_at;
 
-	public function __construct($id, $poster_id, $recipient_id, $created_at) 
+	public function __construct(int $id, int $poster_id, int $recipient_id, DateTime $created_at) 
 	{
 		$this->id = $id;
 		$this->poster_id = $poster_id;
@@ -120,11 +120,11 @@ class DonationPost
 
 class Resources 
 {
-	public $id;
-	public $name;
-	public $description;
+	public int $id;
+	public string $name;
+	public string $description;
 
-	public function __construct($id, $name, $description) 
+	public function __construct(int $id, string $name, string $description) 
 	{
 		$this->id = $id;
 		$this->name = $name;
@@ -132,9 +132,9 @@ class Resources
 	}
 }
 
-function serialize_object($object) 
+function serialize_object(object $object)  
 {
-	return json_encode((arrray) $object);
+	return json_encode((array) $object);
 }
 
 ?>

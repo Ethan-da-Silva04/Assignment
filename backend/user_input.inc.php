@@ -1,7 +1,7 @@
 <?php
 require_once "error.inc.php";
 
-function get_json_from_post() 
+function get_json_from_post(): array
 {
 	expect_request_method("POST");
 	$raw_data = file_get_contents('php://input');
@@ -15,30 +15,30 @@ function get_json_from_post()
 	return $json_data;
 }
 
-function contains_only($string, $permitted) 
+function contains_only(string $string, string $permitted) 
 {
     $pattern = "/^[" . preg_quote($permitted, '/') . "]+$/";
     return preg_match($pattern, $string);
 }
 
-function contains_any($string, $values)
+function contains_any(string $string, string $values)
 {
     $pattern = '/[' . preg_quote($values, '/') . ']/';
     return preg_match($pattern, $string);	
 }
 
-function contains_char($string, $char) 
+function contains_char(string $string, string $char) 
 {
     return strpos($string, $char) !== false;
 }
 
-function is_ascii($char) 
+function is_ascii(string $char) 
 {
     $ord_value = ord($char);
     return ($ord_value >= 0 && $ord_value <= 127);
 }
 
-function string_all_of($string, $predicate)
+function string_all_of(string $string, $predicate)
 {
 	foreach ($string as $character)
 	{
@@ -51,12 +51,12 @@ function string_all_of($string, $predicate)
 	return true;
 }
 
-function is_username_char($char) 
+function is_username_char(string $char) 
 {
 	return contains_char(string: "qwertyuiopasdfghjklzxcvbnm1234567890 ", char: strtolower($char));
 }
 
-function is_password_char($char)
+function is_password_char(string $char)
 {
 	return is_ascii($char);
 }
@@ -68,6 +68,11 @@ function validate_username($username)
 		exit_with_status(message: "Missing username.", status_code: 400);
 	}
 
+	if (!is_string($username)) 
+	{
+		exit_with_status(message: "Username is presented in the wrong format.", status_code: 400);
+	}
+
 	if (strlen($username) > 64) 
 	{
 		exit_with_status(message: "Username is too long.", status_code: 400);
@@ -77,8 +82,6 @@ function validate_username($username)
 	{
 		exit_with_status(message: "Username contains unpermitted characters, username may only consist of alpha-numeric ASCII characters or spaces", status_code: 400);
 	}
-	
-		
 }
 
 function validate_password($password) 
@@ -86,6 +89,11 @@ function validate_password($password)
 	if ($password === null) 
 	{
 		exit_with_status(message: "Missing password.", status_code: 400);
+	}
+
+	if (!is_string($password)) 
+	{
+		exit_with_status(message: "Password is presented in the wrong format.", status_code: 400);
 	}
 
 	if (strlen($password) > 64)
