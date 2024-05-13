@@ -82,7 +82,7 @@ class Account
 		$result_set = Database::select(DatabaseQuery::from_string("SELECT * FROM Accounts WHERE username = ?;"), "s", $username);
 		$fst_row = $result_set->fetch_assoc();
 
-		if (!$fst_row) 
+		if (!$fst_row || $fst_row["username"] != $username) 
 		{
 			exit_with_status("Account does not exist.", status_code: 400);
 		}
@@ -204,7 +204,7 @@ class Resources
 	}
 }
 
-function serialize_object(object $object)  
+function encode_to_json(object $object)  
 {
 	return json_encode((array) $object);
 }

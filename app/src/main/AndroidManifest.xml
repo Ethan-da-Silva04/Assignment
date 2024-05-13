@@ -11,6 +11,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Assignment"
+
+
+        android:usesCleartextTraffic="true"
+
+
         tools:targetApi="31">
 
         <activity
@@ -31,6 +36,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
     <uses-permission android:name="android.permission.INTERNET"/>
 </manifest>

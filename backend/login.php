@@ -6,6 +6,5 @@ $data = get_json_from_post();
 $username = $data["username"];
 $password = $data["password"];
 
-Account::login($username, $password);
-echo "Account login succesful";
+echo json_encode([Account::login($username, $password)]);
 ?>

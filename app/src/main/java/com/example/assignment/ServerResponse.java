@@ -17,10 +17,11 @@ public class ServerResponse {
 
         try {
             String body = response.body().string();
-            if (isError()) {
+            if (isUserError() || isServerError()) {
                 throw new ServerResponseException(body, statusCode);
             }
             data = new JSONArray(body);
+            System.out.println(data);
         } catch (IOException e) {
             System.out.println(e);
         } catch (JSONException e) {
@@ -37,7 +38,9 @@ public class ServerResponse {
     public boolean isSuccess() {
         return 200 <= statusCode && statusCode < 300;
     }
-    public boolean isError() {
+    public boolean isUserError() {
         return 400 <= statusCode && statusCode < 500;
     }
+
+    public boolean isServerError() { return 500 <= statusCode && statusCode < 600; }
 }

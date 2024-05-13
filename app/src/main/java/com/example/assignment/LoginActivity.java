@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,19 +19,18 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void helloWorld(View view) {
-        //EditText txt = (EditText) findViewById(R.id.editTextTextEmailAddress);
-        //EditText password = findViewById(R.id.editTextTextPassword);
-        JSONObject obj = new JSONObject();
+        EditText emailEditText = findViewById(R.id.editTextTextEmailAddress);
+        EditText passwordEditText = findViewById(R.id.editTextTextPassword);
+        String username = emailEditText.getText().toString();
+        String password = passwordEditText.getText().toString();
         try {
-            obj.put("username", "henryd");
-            obj.put("password", "password1@");
-            System.out.println("[Sent Object]: " + obj.toString());
-            ServerResponse response = WebClient.postJSON("login.php", obj);
-            //System.out.println(response.getData().toString());
-        } catch (JSONException e) {
-            System.out.println(e);
+            UserSession session = UserSession.login(username, password);
+            System.out.println(session.get());
         } catch (ServerResponseException e) {
-            System.out.println(e);
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
+        Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT);
     }
 }

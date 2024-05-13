@@ -78,6 +78,11 @@ function validate_username(mixed $username)
 		exit_with_status(message: "Username is presented in the wrong format.", status_code: 400);
 	}
 
+	if (strlen($username) < 3) 
+	{
+		exit_with_status(message: "Username must be atleast 3 characters.", status_code: 400);
+	}
+
 	if (strlen($username) > 64) 
 	{
 		exit_with_status(message: "Username is too long.", status_code: 400);
@@ -99,6 +104,11 @@ function validate_password(mixed $password)
 	if (!is_string($password)) 
 	{
 		exit_with_status(message: "Password is presented in the wrong format.", status_code: 400);
+	}
+
+	if (strlen($password) < 3)
+		exit_with_status(message: "Password must be atleast 8 characters.", status_code: 400);
+	{
 	}
 
 	if (strlen($password) > 64)

@@ -2,5 +2,5 @@
 
 curl --header "Content-Type: application/json" \
   --request POST \
-  --data '{"username":"xyz","password":"17153143"}' \
+  --data '{"username":"xyz","password":"xyz"}' \
   http://127.0.0.1:8000/login.php

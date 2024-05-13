@@ -9,7 +9,6 @@ $password = $data["password"];
 $biography = $data["biography"];
 $phone_number = $data["phone_number"];
 
-Account::register($username, $password, $biography, $phone_number);
-echo "Account creation succesful";
+echo json_encode([Account::register($username, $password, $biography, $phone_number)]);
 
 ?>
