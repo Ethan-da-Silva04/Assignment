@@ -1,7 +1,7 @@
 <?php
 require_once "query.php";
+require_once "entities.inc.php";
 
 expect_get();
-$x = Database::select(DatabaseQuery::from_string("SELECT * FROM Resources;"), "", "");
-echo Database::result_to_json($x);
+Resources::request_resources();
 ?>

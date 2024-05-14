@@ -6,7 +6,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class ClientDonationBasket extends DonationBasket implements Networkable<ClientDonationBasket> {
+public abstract class ClientDonationBasket extends DonationBasket implements Networkable<ClientDonationBasket> {
     private static final int MAX_RESOURCE = 10000;
     private static final int MIN_RESOURCE = 0;
 
@@ -74,20 +74,9 @@ public class ClientDonationBasket extends DonationBasket implements Networkable<
             array.put(item.serialize());
         }
 
-        object.put("basket", array);
+        object.put("basket_content", array);
 
         return object;
-    }
-
-    @Override
-    public ServerResponse post() throws ServerResponseException {
-        try {
-            return WebClient.postJSON("basket_test.php", serialize());
-        } catch (JSONException exception) {
-            System.out.println(exception);
-        }
-
-        return null;
     }
 
     @Override

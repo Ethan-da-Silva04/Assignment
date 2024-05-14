@@ -53,7 +53,7 @@ function string_all_of(string $string, $predicate)
 
 function is_username_char(string $char) 
 {
-	return contains_char(string: "qwertyuiopasdfghjklzxcvbnm1234567890 ", char: strtolower($char));
+	return contains_char(string: "qwertyuiopasdfghjklzxcvbnm1234567890_ ", char: strtolower($char));
 }
 
 function is_password_char(string $char)
@@ -106,7 +106,7 @@ function validate_password(mixed $password)
 		exit_with_status(message: "Password is presented in the wrong format.", status_code: 400);
 	}
 
-	if (strlen($password) < 3)
+	if (strlen($password) < 8)
 		exit_with_status(message: "Password must be atleast 8 characters.", status_code: 400);
 	{
 	}

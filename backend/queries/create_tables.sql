@@ -6,6 +6,9 @@ CREATE TABLE IF NOT EXISTS Accounts (
 	biography VARCHAR(512) NOT NULL,
 	created_at DATETIME NOT NULL,
 
+	account_rank INT UNIQUE NOT NULL,
+	accepted_donations INT NOT NULL,
+
 	PRIMARY KEY(id)
 );
 
@@ -15,35 +18,6 @@ CREATE TABLE IF NOT EXISTS Resources (
 	description VARCHAR(255) NOT NULL,
 
 	PRIMARY KEY(id)
-);
-
-CREATE TABLE IF NOT EXISTS DonationPosts (
-	id INT AUTO_INCREMENT,
-	poster_id INT NOT NULL,
-	recipient_id INT NOT NULL,
-	created_at DATETIME NOT NULL,
-
-	PRIMARY KEY(id),
-	FOREIGN KEY(poster_id) REFERENCES Accounts(id),
-	FOREIGN KEY(recipient_id) REFERENCES Accounts(id)
-);
-
-CREATE TABLE IF NOT EXISTS AcceptedDonationPosts (
-	id INT AUTO_INCREMENT,
-	accepted_at DATETIME NOT NULL,
-	
-	PRIMARY KEY(id)
-);
-
-CREATE TABLE IF NOT EXISTS DonationPostEntries (
-	id INT AUTO_INCREMENT,
-	resource_id INT NOT NULL,
-	post_id INT NOT NULL,
-	quantity INT NOT NULL,
-
-	PRIMARY KEY(id),
-	FOREIGN KEY(post_id) REFERENCES DonationPosts(id),
-	FOREIGN KEY(resource_id) REFERENCES Resources(id)
 );
 
 CREATE TABLE IF NOT EXISTS DonationPages (
@@ -61,10 +35,40 @@ CREATE TABLE IF NOT EXISTS DonationPageEntries (
 	id INT AUTO_INCREMENT,
 	page_id INT NOT NULL,
 	resource_id INT NOT NULL,
-	quantity INT NOT NULL,
+	quantity_asked INT NOT NULL,
+	quantity_received INT NOT NULL,
 	
 	PRIMARY KEY(id),
 	FOREIGN KEY(page_id) REFERENCES DonationPages(id),
+	FOREIGN KEY(resource_id) REFERENCES Resources(id)
+);
+
+CREATE TABLE IF NOT EXISTS DonationPosts (
+	id INT AUTO_INCREMENT,
+	poster_id INT NOT NULL,
+	recipient_page_id INT NOT NULL,
+	created_at DATETIME NOT NULL,
+
+	PRIMARY KEY(id),
+	FOREIGN KEY(poster_id) REFERENCES Accounts(id),
+	FOREIGN KEY(recipient_page_id) REFERENCES DonationPages(id)
+);
+
+CREATE TABLE IF NOT EXISTS AcceptedDonationPosts (
+	id INT AUTO_INCREMENT,
+	accepted_at DATETIME NOT NULL,
+	
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE IF NOT EXISTS DonationPostEntries (
+	id INT AUTO_INCREMENT,
+	resource_id INT NOT NULL,
+	post_id INT NOT NULL,
+	quantity INT NOT NULL,
+
+	PRIMARY KEY(id),
+	FOREIGN KEY(post_id) REFERENCES DonationPosts(id),
 	FOREIGN KEY(resource_id) REFERENCES Resources(id)
 );
 

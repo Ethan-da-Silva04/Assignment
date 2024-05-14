@@ -41,7 +41,7 @@ import org.json.JSONObject;
 
 public class WebClient {
     private static OkHttpClient client;
-    private static String serverURL = "http://192.168.1.105:8000/";
+    private static String serverURL = "http://10.197.160.37:8000/";
     private static final MediaType JSON = MediaType.get("application/json");
 
     private WebClient() {}
@@ -148,7 +148,7 @@ public class WebClient {
         object.put("biography", biography);
         object.put("phoneNumber", phoneNumber);
 
-        return UserSession.initialize(WebClient.postJSON("login", object).getData());
+        return UserSession.initialize(WebClient.postJSON("register", object).getData());
     }
 
     public static UserSession login(String username, String password) throws ServerResponseException, JSONException {
