@@ -1,2 +1,2 @@
-INSERT INTO ACCOUNTS
-VALUES(NULL, :username, :password_hash, :phone_number, :biography, NOW());
+INSERT INTO Accounts 
+VALUES(NULL, ?, ?, ?, ?, NOW(), LAST_INSERT_ID(), 0);

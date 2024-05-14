@@ -3,10 +3,10 @@
 require_once 'entities.inc.php';
 require_once "error.inc.php";
 
-
-/* TODO: faulty queries should not cause the program to exit, just throw exceptions. */
 class DatabaseQuery
 {
+	private static array $cached_queries = array();
+
 	public string $data;
 
 	private function __construct(string $data)
@@ -16,7 +16,29 @@ class DatabaseQuery
 
 	public static function from_file(string $file_path): self
 	{
-		return new self($file_path);
+		if (isset(self::$cached_queries, $file_path)) {
+			return self::$cached_queries[$file_path];
+		}
+
+		$file = fopen($file_path, "r");
+
+		if ($file === null) 
+		{
+			exit_with_status("Failed finding query.\n", status_code: 500);		
+		}
+		
+		// this should be fine to not be checked right? ...right?	
+		$length = filesize($file_path);
+
+		$contents = fread($file, $length);
+
+		if ($contents === null)
+		{
+			exit_with_status("Failed reading query.\n", status_code: 500);
+		}
+
+		self::$cached_queries[$file_path] = $contents;
+		return new self($contents);
 	}
 
 	public static function from_string(string $query_as_string): self

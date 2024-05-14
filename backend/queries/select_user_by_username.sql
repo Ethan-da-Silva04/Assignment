@@ -1,3 +1,3 @@
 SELECT *
 FROM Accounts
-WHERE username = :username;
+WHERE username = ?;
