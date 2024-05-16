@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-public class Resource implements JSONSerializable {
+public class Resource {
     private int id;
     private String name;
     private String description;
@@ -57,12 +57,5 @@ public class Resource implements JSONSerializable {
             throw new RuntimeException(e);
         }
         return resources;
-    }
-
-    @Override
-    public JSONObject serialize() throws JSONException {
-        JSONObject result = new JSONObject();
-        result.put("id", id);
-        return result;
     }
 }

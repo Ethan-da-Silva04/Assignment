@@ -1,2 +1,2 @@
-INSERT INTO DonationPosts 
+INSERT INTO Contributions 
 VALUES(NULL, ?, ?, NOW());

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS Accounts (
 	created_at DATETIME NOT NULL,
 
 	account_rank INT UNIQUE NOT NULL,
-	accepted_donations BIGINT UNSIGNED NOT NULL,
+	accepted_contributions BIGINT UNSIGNED NOT NULL,
 
 	PRIMARY KEY(id)
 );
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS DonationPageEntries (
 	FOREIGN KEY(resource_id) REFERENCES Resources(id)
 );
 
-CREATE TABLE IF NOT EXISTS DonationPosts (
+CREATE TABLE IF NOT EXISTS Contributions (
 	id INT AUTO_INCREMENT,
 	poster_id INT NOT NULL,
 	recipient_page_id INT NOT NULL,
@@ -53,29 +53,29 @@ CREATE TABLE IF NOT EXISTS DonationPosts (
 	FOREIGN KEY(recipient_page_id) REFERENCES DonationPages(id)
 );
 
-CREATE TABLE IF NOT EXISTS PendingDonationPosts (
+CREATE TABLE IF NOT EXISTS PendingContributions (
 	id INT,
 	PRIMARY KEY(id),
-	FOREIGN KEY(id) REFERENCES DonationPosts(id)
+	FOREIGN KEY(id) REFERENCES Contributions(id)
 );
 
-CREATE TABLE IF NOT EXISTS DonationPostEntries (
+CREATE TABLE IF NOT EXISTS ContributionEntries (
 	id INT AUTO_INCREMENT,
 	resource_id INT NOT NULL,
-	post_id INT NOT NULL,
+	contribution_id INT NOT NULL,
 	quantity INT UNSIGNED NOT NULL,
 
 	PRIMARY KEY(id),
-	FOREIGN KEY(post_id) REFERENCES DonationPosts(id),
+	FOREIGN KEY(contribution_id) REFERENCES Contributions(id),
 	FOREIGN KEY(resource_id) REFERENCES Resources(id)
 );
 
-CREATE TABLE IF NOT EXISTS AcceptedDonationPostEntries (
+CREATE TABLE IF NOT EXISTS AcceptedContributionEntries (
 	id INT,
 	accepted_at DATETIME NOT NULL,
 	
 	PRIMARY KEY(id),
-	FOREIGN KEY(id) REFERENCES DonationPostEntries(id)
+	FOREIGN KEY(id) REFERENCES ContributionEntries(id)
 );
 
 CREATE TABLE IF NOT EXISTS AccountReports (

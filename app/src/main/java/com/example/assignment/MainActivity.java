@@ -32,12 +32,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testBasket() {
-        ClientDonationBasket basket = new ClientDonationBasket();
+        ClientBasket basket = new ClientBasket();
         try {
             basket.add(1, 1);
             basket.add(1, 50);
 
-            ServerResponse response = basket.post();
+           // ServerResponse response = basket.post();
         } catch (Exception e) {
             Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
         }

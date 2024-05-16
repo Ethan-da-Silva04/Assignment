@@ -5,14 +5,23 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public abstract class ClientDonationBasket extends DonationBasket implements Networkable<ClientDonationBasket> {
+
+/*
+    Donation basket to send to server
+ */
+public class Basket implements JSONSerializable {
     private static final int MAX_RESOURCE = 10000;
     private static final int MIN_RESOURCE = 0;
 
-    public ClientDonationBasket() {
+    protected List<DonationItem> items;
+
+    public Basket() {
         items = new ArrayList<>();
     }
+
+    public List<DonationItem> getItems() { return items; }
 
     public void add(int resourceId, int quantity) throws Exception {
         if (!contains(resourceId)) {
@@ -67,20 +76,15 @@ public abstract class ClientDonationBasket extends DonationBasket implements Net
 
     @Override
     public JSONObject serialize() throws JSONException {
-        JSONObject object = new JSONObject();
+        JSONObject result = new JSONObject();
         JSONArray array = new JSONArray();
 
         for (DonationItem item : items) {
             array.put(item.serialize());
         }
 
-        object.put("basket_content", array);
+        result.put("content", array);
 
-        return object;
-    }
-
-    @Override
-    public ClientDonationBasket request() {
-        return null;
+        return result;
     }
 }

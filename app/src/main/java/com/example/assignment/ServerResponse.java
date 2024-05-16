@@ -21,7 +21,6 @@ public class ServerResponse {
                 throw new ServerResponseException(body, statusCode);
             }
             data = new JSONArray(body);
-            System.out.println(data);
         } catch (IOException e) {
             System.out.println(e);
         } catch (JSONException e) {

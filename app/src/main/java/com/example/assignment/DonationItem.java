@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class DonationItem implements JSONSerializable {
+    private int id;
     private Resource resource;
     private int quantity;
 
@@ -12,9 +13,9 @@ public class DonationItem implements JSONSerializable {
         this.quantity = quantity;
     }
 
-    public int getId() {
-        return resource.getId();
-    }
+    public int getResourceId() { return resource.getId(); }
+
+    public int getId() { return id; }
 
     public String getName() {
         return resource.getName();
@@ -27,7 +28,8 @@ public class DonationItem implements JSONSerializable {
     @Override
     public JSONObject serialize() throws JSONException {
         JSONObject result = new JSONObject();
-        result.put("resource", resource.serialize());
+        result.put("id", id);
+        result.put("resource_id", resource.getId());
         result.put("quantity", quantity);
         return result;
     }

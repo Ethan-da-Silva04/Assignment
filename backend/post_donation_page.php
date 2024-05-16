@@ -1,7 +1,7 @@
 <?php
-require_once "user_input.inc.php";
 require_once "error.inc.php";
+require_once "entities.inc.php";
 
-$content = get_json_from_post()["content"];
-validate_page_content($content);
+$json_object = get_json_from_post();
+echo DonationPage::insert_from_json($json_object);
 ?>

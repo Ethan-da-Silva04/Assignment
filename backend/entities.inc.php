@@ -10,7 +10,7 @@ class Account
 	public string $phone_number;
 	public DateTime $created_at;
 	public int $account_rank;
-	public int $accepted_donations;
+	public int $accepted_contributions;
 
 	private function __construct(
 					int $id, 
@@ -19,7 +19,7 @@ class Account
 					string $phone_number, 
 					DateTime $created_at,
 					int $account_rank,
-					int $accepted_donations)
+					int $accepted_contributions)
 	{
 		$this->id = $id;
 		$this->username = $username;
@@ -27,20 +27,21 @@ class Account
 		$this->phone_number = $phone_number;
 		$this->created_at = $created_at;
 		$this->account_rank = $account_rank;
-		$this->accepted_donations = $accepted_donations;
+		$this->accepted_contributions = $accepted_contributions;
 	}
 
-	public static function request_pending_donations(): void
+	public static function request_pending_contributions(): void
 	{
 		self::require_login();
 		try
 		{
-			echo Database::result_to_json(Database::select(DatabaseQuery::from_file("queries/get_pending_donations.sql"), "i", self::get_session()["id"]));
+			expect_get();
+			echo Database::result_to_json(Database::select(DatabaseQuery::from_file("queries/get_pending_contributions.sql"), "i", self::get_session()["id"]));
 		}
 		catch (Exception $e) 
 		{
 			error_log($e->getMessage());
-			exit_with_status(message: "Server encountered error fetching pending donations.", status_code: 500);
+			exit_with_status(message: "Server encountered error fetching pending contributions.", status_code: 500);
 		}
 	}
 
@@ -133,18 +134,18 @@ class Account
 		}
 	}
 
-	public static function accept_donation(DonationPost $post): void
+	public static function accept_contribution(Contribution $contribution): void
 	{
-		self::require_login($post->recipient_id);
-		$accepted_donation_delta = 0;
+		self::require_login($contribution->recipient_id);
+		$accepted_contribution_delta = 0;
 
-		foreach ($post->contents as $item)
+		foreach ($contribution->contents as $item)
 		{
-			$accepted_donation_delta += $item.quantity;
+			$accepted_contribution_delta += $item.quantity;
 		}
 			
-		$id = $post->poster_id;
-		$query = DatabaseQuery::from_file("queries/update_ranks.sql");
+		$id = $contribution->poster_id;
+		$query = DatabaseQuery::from_file("queries/update_account_ranks.sql");
 		try
 		{
 			Database::update
@@ -153,7 +154,7 @@ class Account
 				$query,
 				"iiiii",
 				$id,
-				$accepted_donation_delta,
+				$accepted_contribution_delta,
 				$id,
 				$id,
 				$id
@@ -207,7 +208,7 @@ class Account
 			$fst_row["phone_number"], 
 			DateTime::createFromFormat('Y-m-d H:i:s', $fst_row["created_at"]),
 			$fst_row["account_rank"],
-			$fst_row["accepted_donations"]
+			$fst_row["accepted_contributions"]
 		);
 	}
 }
@@ -229,7 +230,7 @@ class AccountReport
 		$this->created_at = $created_at;
 	}
 
-	public static function from_json(mixed $json_array): AccountReport
+	public static function from_json(mixed $json_object): AccountReport
 	{
 		return null;
 	}
@@ -253,6 +254,53 @@ class DonationPageEntry
 	}
 }
 
+function validate_basket_content(&$basket_content): void
+{
+	if ($basket_content === null)
+	{
+		exit_with_status(message: "Missing basket content.", status_code: 400);
+	}
+
+	if (!is_array($basket_content) || array_values($basket_content) !== $basket_content)
+	{
+		exit_with_status(message: "Basket content is in the wrong format.", status_code: 400);
+	}
+	
+	$resources = Database::result_to_json(Resources::get_resource_set());
+
+	foreach ($basket_content as $item)
+	{
+		$quantity_asked = $basket_content["quantity"];
+		if (!is_int($quantity_asked))
+		{
+			exit_with_status(message: "Basket content presented in the wrong format.", status_code: 400);
+		}
+
+		if ($quantity_asked <= 0 || $quantity_asked > 1000000)
+		{
+			exit_with_status(message: "Basket quantity is too high or too low.", status_code: 400);
+		}
+
+		$found_match = false;	
+		foreach ($resources as $resource)
+		{
+			if ($resources["id"] === $item["resource_id"])
+			{
+				$found_match = true;
+				break;
+			}
+		}
+
+		if (!$found_match)
+		{
+			exit_with_status(message: "Invalid resource id.", status_code: 400);
+		}
+
+	}
+}
+
+
+
 class DonationPage 
 {
 	public int $id;
@@ -269,70 +317,32 @@ class DonationPage
 		
 	}
 
-	private static function validate_basket_content(&$basket_content): void
-	{
-		if ($basket_content === null)
-		{
-			exit_with_status(message: "Missing basket content.", status_code: 400);
-		}
-
-		if (!is_array($basket_content) || array_values($basket_content) !== $basket_content)
-		{
-			exit_with_status(message: "Basket content is in the wrong format.", status_code: 400);
-		}
-		
-		$resources = Database::result_to_json(Resources::get_resource_set());
-
-		foreach ($basket_content as $item)
-		{
-			$quantity_asked = $basket_content["quantity_asked"];
-			if (!is_int($quantity_asked))
-			{
-				exit_with_status(message: "Basket content presented in the wrong format.", status_code: 400);
-			}
-
-			if ($quantity_asked <= 0 || $quantity_asked > 1000000)
-			{
-				exit_with_status(message: "Basket quantity is too high or too low.", status_code: 400);
-			}
-
-			$found_match = false;	
-			foreach ($resources as $resource)
-			{
-				if ($resources["id"] === $item["resource_id"])
-				{
-					$found_match = true;
-					break;
-				}
-			}
-
-			if (!$found_match)
-			{
-				exit_with_status(message: "Invalid resource id.", status_code: 400);
-			}
-
-		}
-	}
-
-
-	public static function insert_from_json(mixed $json_array): void
+	public static function insert_from_json(mixed $json_object): void
 	{
 		Account::require_login();
 		require_once "user_input.inc.php";
-		validate_page_name($json_array["name"]);
-		validate_page_content($json_array["page_content"]);
+
+		if (!isset($json_object["basket"]))
+		{
+			exit_with_status(message: "Missing basket.", status_code: 400);	
+		}
+
+		validate_page_name($json_object["name"]);
+		validate_page_content($json_object["page_content"]);
 		
 		$donatee_id = Account::get_session()["id"];
 		
-		$name = $json_array["name"];
+		$name = $json_object["name"];
 		$created_at = new DateTime();
 		
 		try
 		{
 			$query = DatabaseQuery::from_file("queries/insert_donation_page.sql");
 			$page_id = Database::insert(true, $query, "is", $donatee_id, $name);
-			$basket_content = $json_array["basket_content"];	
-			self::validate_basket_content($basket_content);
+			
+
+			$basket_content = $json_object["basket"]["content"];	
+			validate_basket_content($basket_content);
 
 			foreach ($basket_content as $item)
 			{
@@ -349,32 +359,32 @@ class DonationPage
 		}	
 		
 		$file = fopen("users/" . $name . ".html", "w");
-		fwrite($file, $json_array["page_content"]);
+		fwrite($file, $json_object["page_content"]);
 	}
 }
 
-class DonationPostEntry 
+class ContributionEntry 
 {
 	public int $id;
 	public int $resource_id;
-	public int $post_id;
+	public int $contribution_id;
 	public int $quantity;
 
-	public function __construct(int $id, int $resource_id, int $post_id, int $quantity) 
+	public function __construct(int $id, int $resource_id, int $contribution_id, int $quantity) 
 	{
 		$this->id = $id;
 		$this->resource_id = $resource_id;
-		$this->post_id = $post_id;
+		$this->contribution_id = $contribution_id;
 		$this->quantity = $quantity;
 	}
 
-	public static function insert_from_json(mixed $json_array): void
+	public static function insert_from_json(mixed $json_object): void
 	{
 		Account::require_login();
 	}
 }
 
-class DonationPost 
+class Contribution 
 {
 	public int $id;
 	public int $poster_id;
@@ -391,58 +401,22 @@ class DonationPost
 		$this->contents = $contents;
 	}
 
-	private static function validate_basket_content(&$basket_content): void
-	{
-		if ($basket_content === null)
-		{
-			exit_with_status(message: "Missing basket content.", status_code: 400);
-		}
-
-		if (!is_array($basket_content) || array_values($basket_content) !== $basket_content)
-		{
-			exit_with_status(message: "Basket content is in the wrong format.", status_code: 400);
-		}
-		
-		$resources = Database::result_to_json(Resources::get_resource_set());
-
-		foreach ($basket_content as $item)
-		{
-			$quantity = $item["quantity"];
-			if (is_int($quantity) || $quantity <= 0 || $quantity > 10000)
-			{
-				exit_with_status(message: "Invalid quantity.", status_code: 400);
-			}
-			
-			$found_match = false;	
-			foreach ($resources as $resource)
-			{
-				if ($resources["id"] === $item["resource_id"])
-				{
-					$found_match = true;
-					break;
-				}
-			}
-
-			if (!$found_match)
-			{
-				exit_with_status(message: "Invalid resource id.", status_code: 400);
-			}
-
-		}
-	}
-
-	public static function from_json($json_array): DonationPost
+	public static function from_json(array $json_object): Contribution
 	{
 		Account::require_login();
-		if ($json_array === null)
+		if ($json_object === null)
 		{
 			exit_with_status(message: "Missing json", status_code: 400);
 		}
+		if (!isset($json_object["basket"]))
+		{
+			exit_with_status(message: "Missing basket.", status_code: 400);	
+		}
 
-		$id = $json_array["id"];	
-		$poster_id = $json_array["poster_id"];
-		$recipient_id = $json_array["recipient_id"];
-		$raw_items = $json_array["contents"];
+		$id = $json_object["id"];	
+		$poster_id = $json_object["poster_id"];
+		$recipient_id = $json_object["recipient_id"];
+		$raw_items = $json_object["basket"]["content"];
 		$items = array();
 		$created_at = null;
 
@@ -453,7 +427,7 @@ class DonationPost
 
 		try 
 		{
-			$query_string = "SELECT * FROM DonationPosts WHERE DonationPosts.id = ?";
+			$query_string = "SELECT * FROM Contributions WHERE Contributions.id = ?";
 			$query = DatabaseQuery::from_string($query_string);
 			$result = Database::select($query, "i", $id);
 			$row = $result->fetch_assoc();
@@ -468,7 +442,7 @@ class DonationPost
 			}
 
 			$created_at = $row["created_at"];
-			$query_string = "SELECT * FROM DonationPostEntries WHERE DonationPostEntries.id = ?";
+			$query_string = "SELECT * FROM ContributionEntries WHERE ContributionEntries.id = ?";
 			$query = DatabaseQuery::from_string($query_string);
 
 			foreach ($raw_items as $raw_item)
@@ -487,12 +461,12 @@ class DonationPost
 					exit_with_status("Item does not exist.", status_code: 400);
 				}
 
-				if ($row["post_id"] !== $id)
+				if ($row["contribution_id"] !== $id)
 				{
 					exit_with_status("Entry not linked with account.", status_code: 400);
 				}
 				
-				$items[] = new DonationPostEntry($id, $row["resource_id"], $row["post_id"], $row["quantity"]);
+				$items[] = new ContributionEntry($id, $row["resource_id"], $row["contribution_id"], $row["quantity"]);
 				
 			}	
 		}
@@ -506,22 +480,21 @@ class DonationPost
 		
 	}
 
-	public static function insert_from_json($json_array): DonationPost
+	public static function insert_from_json(array $json_object): Contribution
 	{
 		require_once 'user_input.inc.php';
 		require_once 'query.php';
 		require_once "error.inc.php";
 		Account::require_login();
-
-		if ($json_array["basket_details"] === null)
+		
+		if (!isset($json_object["basket"]))
 		{
-			exit_with_status(message: "Missing basket details.", status_code: 400);
+			exit_with_status(message: "Missing basket.", status_code: 400);	
 		}
 
-		$basket_details = $json_array["basket_details"];	
-		$basket_content = $json_array["basket_content"];
-		$poster_id = basket_details["poster_id"];
-		$recipient_id = basket_details["recipient_page_id"];
+		$basket_content = $json_object["basket"]["content"];
+		$poster_id = $json_object["poster_id"];
+		$recipient_id = $json_object["recipient_page_id"];
 
 		if ($poster_id === null || $recipient_id === null)
 		{
@@ -541,20 +514,20 @@ class DonationPost
 		// be more specific and ask for poster_id now that it is a known integer
 		Account::require_login_of_user($poster_id);
 
-		self::validate_basket_content($basket_content);
+		validate_basket_content($basket_content);
 
 		try 
 		{
 			$created_at = new DateTime();
-			$query = DatabaseQuery::from_file("queries/insert_donation_post.sql")	;
+			$query = DatabaseQuery::from_file("queries/insert_contribution.sql")	;
 			$id = Database::insert(true, $query, "iii", $poster_id, $recipient_id);
 			$result_entries = array();
 
 			foreach ($basket_content as $item)
 			{
-				$query = DatabaseQuery::from_file("queries/insert_donation_post_entry.sql");
+				$query = DatabaseQuery::from_file("queries/insert_contribution_entry.sql");
 				$item_id = Database::insert(true, $query, "iii", $item["resource_id"], $id, $item["quantity"]);
-				$entry = new DonationPostEntry($item_id, $item["resource_id"], $id, $item["quantity"]);
+				$entry = new ContributionEntry($item_id, $item["resource_id"], $id, $item["quantity"]);
 				$result_entries[] = $entry;
 			}
 		}
@@ -567,7 +540,7 @@ class DonationPost
 		return new self($id, $poster_id, $recipient_id, $created_at, $result_entries);
 	}
 
-	public static function accept_donation_post(DonationPost $post): void
+	public static function accept_contribution(Contribution $post): void
 	{
 		Account::require_login_of_user($post->recipient_id);
 		
@@ -579,6 +552,8 @@ class Resources
 	public int $id;
 	public string $name;
 	public string $description;
+	
+	public static ?mysqli_result $resource_set;
 
 	public function __construct(int $id, string $name, string $description) 
 	{
@@ -589,8 +564,13 @@ class Resources
 
 	public static function get_resource_set(): mysqli_result
 	{
+		if (self::$resource_set !== null)
+		{
+			return self::$resource_set;
+		}
+
 		$query = DatabaseQuery::from_file("queries/select_resources.sql");
-		return Database::select($query, "", "");
+		return self::$resource_set = Database::select($query, "", "");
 	}
 
 	public static function request_resources(): void
@@ -598,11 +578,6 @@ class Resources
 		expect_get();
 		echo Database::result_to_json(self::get_resource_set());
 	}	
-}
-
-function encode_to_json(object $object)  
-{
-	return json_encode((array) $object);
 }
 
 ?>
