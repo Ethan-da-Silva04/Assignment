@@ -1,2 +1,2 @@
 1. Account Reporting
-2. Donation Post Accepting
+2. Decompose queries into seperate files so that query handler works as intented

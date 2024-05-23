@@ -7,8 +7,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 import android.view.View;
+import android.content.DialogInterface;
+import android.app.AlertDialog;
 
 import org.json.JSONException;
+import java.util.List;
 
 // BCrypt library, OkHttp library
 public class MainActivity extends AppCompatActivity {
@@ -21,6 +24,28 @@ public class MainActivity extends AppCompatActivity {
         //testUser();
     }
 
+    public void showLogin(View view) {
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    public void showInformation(View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Welcome to ShareCycle!")
+                .setMessage("We're here to connect those who want to give to others with those in need.")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Action to perform when OK button is clicked
+                    }
+                })
+                .show(); // Show the AlertDialog
+    }
+
+    public void showSignup(View view) {
+        Intent intent = new Intent(this, SignupActivity.class);
+        startActivity(intent);
+    }
+
     public void testUser() {
         try {
             UserSession session = UserSession.login("xyz", "xyze");
@@ -31,13 +56,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void testBasket() {
-        ClientBasket basket = new ClientBasket();
-        try {
-            basket.add(1, 1);
-            basket.add(1, 50);
+    public void testFeature(View view) {
+        // Intent intent = new Intent(this, ViewDonationPageActivity.class);
+        //startActivity(intent);
+        showSearchPages(view);
+    }
 
-           // ServerResponse response = basket.post();
+    public void showCreatePage(View view) {
+        Intent intent = new Intent(this, CreatePageActivity.class);
+        startActivity(intent);
+    }
+
+    public void showSearchPages(View view) {
+        Intent intent = new Intent(this, SearchPagesActivity.class);
+        startActivity(intent);
+    }
+
+    public void testBasket() {
+        try {
+            DonationPage templateSearch = new DonationPage("Some name");
+            List<DonationPage> pages = new Search<DonationPage>().run(
+                    new SearchQuery("search_pages_by_name.php"),
+                    DonationPage::fromJSONObject,
+                    templateSearch,
+                    "name"
+            );
         } catch (Exception e) {
             Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
         }

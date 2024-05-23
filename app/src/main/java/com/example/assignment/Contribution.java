@@ -6,7 +6,7 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-public class Contribution implements JSONSerializable, Searchable {
+public class Contribution implements JSONSerializable {
     private int id;
     private int posterId;
     private int recipientPageId;
@@ -14,6 +14,13 @@ public class Contribution implements JSONSerializable, Searchable {
 
     private Contribution() {
         this.id = 0;
+    }
+
+    private Contribution(int id, int posterId, int recipientPageId, Basket basket) {
+        this.id = id;
+        this.posterId = posterId;
+        this.recipientPageId = recipientPageId;
+        this.basket = basket;
     }
 
     public static Contribution fromSession(int recipientPageId, Basket basket) {
@@ -43,6 +50,19 @@ public class Contribution implements JSONSerializable, Searchable {
 
     public static Contribution fromJSONObject(JSONObject object) {
 
+        try {
+            int id = (int) object.get("id");
+            int posterId = (int) object.get("poster_id");
+            int recipientPageId = (int) object.get("recipient_page_id");
+            Basket basket = Basket.fromJSONArray((JSONArray) object.get("content"));
+            return new Contribution(id, posterId, recipientPageId, basket);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Basket getBasket() {
+        return basket;
     }
 
     @Override
@@ -54,35 +74,12 @@ public class Contribution implements JSONSerializable, Searchable {
         return result;
     }
 
-    public ServerResponse post() throws JSONException, ServerResponseException {
+    public ServerResponse post() throws ServerResponseException {
         try {
             ServerResponse response = WebClient.postJSON("post_contribution.php", serialize());
             JSONObject object = (JSONObject) response.getData().get(0);
             System.out.println(object);
             return response;
-        } catch (ServerResponseException e) {
-            throw e;
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public List<Searchable> search() {
-        try {
-            return Searchable.fromQuery(
-                    new SearchQuery("request_contributions"),
-                    serialize()
-            );
-            JSONObject object = new JSONObject();
-            object.put("id", id);
-            return new Search<Contribution>().run(
-                    new SearchQuery("request_contributions"),
-
-            )
-            return Search<Contribution>.search(Contribution::deserialize);
-        } catch (ServerResponseException e) {
-            throw new RuntimeException(e);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

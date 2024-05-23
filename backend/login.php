@@ -5,6 +5,10 @@ require_once "entities.inc.php";
 $data = get_json_from_post();
 $username = $data["username"];
 $password = $data["password"];
+session_start();
 
-echo json_encode([Account::login($username, $password)]);
+$account = Account::login($username, $password);
+Account::require_login();
+
+echo json_encode([$account]) . "AND ALSO: " . $_SESSION["__user"]->id;
 ?>

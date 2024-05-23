@@ -1,12 +1,11 @@
 package com.example.assignment;
 
-import android.view.PixelCopy;
+import androidx.annotation.NonNull;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -14,63 +13,61 @@ import java.util.concurrent.Callable;
 
 import javax.net.ssl.TrustManager;
 
+import okhttp3.Cookie;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.CookieJar;
+import okhttp3.HttpUrl;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.net.ssl.SSLSocketFactory;
-import java.security.cert.X509Certificate;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.KeyManagementException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.io.IOException;
 import java.lang.RuntimeException;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class WebClient {
-    private static OkHttpClient client;
-    private static String serverURL = "http://10.197.160.37:8000/";
+    private static final OkHttpClient client;
+    private static final String serverURL = "http://192.168.1.105:8000/";
+
     private static final MediaType JSON = MediaType.get("application/json");
 
     private WebClient() {}
 
+    private static Request.Builder addCookies(Request.Builder builder, @NonNull String subpath) {
+        List<Cookie> cookies = client.cookieJar().loadForRequest(HttpUrl.parse(getFullPath(subpath)));
+
+        for (Cookie cookie : cookies) {
+            builder.addHeader("Cookie", cookie.toString());
+        }
+
+        return builder;
+    }
+
     private static Request generatePostRequest(String subPath, String json) {
         RequestBody requestBody = RequestBody.create(json, JSON);
 
-        return new Request.Builder()
+        Request.Builder builder = new Request.Builder()
                 .url(getFullPath(subPath))
-                .post(requestBody)
-                .build();
+                .post(requestBody);
+
+        return addCookies(builder, subPath).build();
     }
 
     private static Request generateGetRequest(String subPath) {
-        return new Request.Builder()
-                .url(getFullPath(subPath))
-                .build();
+        Request.Builder builder = new Request.Builder()
+                .url(getFullPath(subPath));
+
+        return addCookies(builder, subPath).build();
     }
 
     private static ServerResponse makeServerRequest(Request request) throws ServerResponseException {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<ServerResponse> callable = () -> {
-            try {
-                Response response = client.newCall(request).execute();
-                return new ServerResponse(response);
-            } catch (IOException e) {
-                throw e;
-                //System.out.println(e);
-            }
+            Response response = client.newCall(request).execute();
+            return new ServerResponse(response);
         };
 
         Future<ServerResponse> future = executor.submit(callable);
@@ -131,9 +128,13 @@ public class WebClient {
             final SSLContext sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
             final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-            OkHttpClient.Builder builder = new OkHttpClient.Builder();
-            builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
-            builder.hostnameVerifier((hostname, session) -> true);
+            // I don't know why, but JavaNetCookieJar is unavailable, so I resorted to creating a rudimentary garbage CookieJar so that the session could be managed.
+            CookieJar cookieJar = new CustomCookieJar();
+
+            OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                    .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
+                    .cookieJar(cookieJar)
+                    .hostnameVerifier((hostname, session) -> true);
 
             return builder.build();
         } catch (Exception e) {
@@ -146,7 +147,7 @@ public class WebClient {
         object.put("username", username);
         object.put("password", password);
         object.put("biography", biography);
-        object.put("phoneNumber", phoneNumber);
+        object.put("phone_number", phoneNumber);
 
         return UserSession.initialize(WebClient.postJSON("register", object).getData());
     }
@@ -160,8 +161,6 @@ public class WebClient {
     }
 
     static {
-
         client = createUnsafeClient();
-        System.out.println("Test!");
     }
 }

@@ -1,2 +1,3 @@
 INSERT INTO Accounts 
-VALUES(NULL, ?, ?, ?, ?, NOW(), LAST_INSERT_ID(), 0);
+VALUES(NULL, ?, ?, ?, ?, NOW(), ? + 1, 0);
+

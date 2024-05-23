@@ -1,6 +1,9 @@
 <?php
-/* It's probably convenient to represent the different entities as php objects */
 
+/* It's probably convenient to represent the different entities as php objects */
+require_once "user_input.inc.php";
+require_once "error.inc.php";
+require_once "query.php";
 
 class Account 
 {
@@ -78,10 +81,11 @@ class Account
 		$hashed_password = password_hash(password: $password, algo: PASSWORD_DEFAULT);
 
 		$created_at = new DateTime();
+		$count_users = Database::select(DatabaseQuery::from_file("queries/select_count_accounts.sql"), "", "")->fetch_assoc()["total"];
 		$query = DatabaseQuery::from_file("queries/register_user.sql");
 		try 
 		{
-			$id = Database::insert(true, $query, "ssss", $username, $hashed_password, $phone_number, $biography);
+			$id = Database::insert(true, $query, "ssssi", $username, $hashed_password, $phone_number, $biography, $count_users);
 		} 
 		catch (Exception $e)
 		{
@@ -89,16 +93,19 @@ class Account
 			exit_with_status(message: "Account with that username already exists.", status_code: 400);	
 		}
 		
-		return $_SESSION["__user"] = new self($id, $username, $biography, $phone_number, $created_at, $id, 0);
+		session_regenerate_id(true);		
+		return $_SESSION["__user"] = new self($id, $username, $biography, $phone_number, $created_at, $count_users + 1, 0);
 	}
 
 	public static function is_logged_in(): bool
 	{
+		session_start();
 		return isset($_SESSION["__user"]);
 	}
 
 	public static function get_logged_in(): Account|false
 	{
+		session_start();
 		if (!Account::is_logged_in())
 		{
 			return false;
@@ -177,7 +184,7 @@ class Account
 
 		self::validate_user_login_input($username, $password);
 		$hashed_password = password_hash(password: $password, algo: PASSWORD_DEFAULT);
-		$query = DatabaseQuery::from_file("queries/select_user_by_username");
+		$query = DatabaseQuery::from_file("queries/select_user_by_username.sql");
 
 		try
 		{
@@ -201,6 +208,7 @@ class Account
 			exit_with_status("Incorrect password.", status_code: 400);
 		}
 
+		session_regenerate_id(true);		
 		return $_SESSION["__user"] = new self(
 			$fst_row["id"], 
 			$fst_row["username"], 
@@ -261,30 +269,38 @@ function validate_basket_content(&$basket_content): void
 		exit_with_status(message: "Missing basket content.", status_code: 400);
 	}
 
-	if (!is_array($basket_content) || array_values($basket_content) !== $basket_content)
+	error_log(json_encode($basket_content));
+	if (!is_array($basket_content))
 	{
 		exit_with_status(message: "Basket content is in the wrong format.", status_code: 400);
 	}
+
+	if (array_values($basket_content) !== $basket_content) 
+	{
+		exit_with_status(message: "Basket must be a non-associative array.", status_code: 400);
+	}
 	
-	$resources = Database::result_to_json(Resources::get_resource_set());
+	$resources = Resources::get_resource_set();
 
 	foreach ($basket_content as $item)
 	{
-		$quantity_asked = $basket_content["quantity"];
-		if (!is_int($quantity_asked))
+		$quantity = $item["quantity"];
+		if (!is_int($quantity))
 		{
-			exit_with_status(message: "Basket content presented in the wrong format.", status_code: 400);
+			exit_with_status(message: "Basket content presented in the wrong format. Expected int.", status_code: 400);
 		}
 
-		if ($quantity_asked <= 0 || $quantity_asked > 1000000)
+		if ($quantity <= 0 || $quantity > 1000000)
 		{
 			exit_with_status(message: "Basket quantity is too high or too low.", status_code: 400);
 		}
 
+
 		$found_match = false;	
-		foreach ($resources as $resource)
+
+		while (($resource = $resources->fetch_assoc())) 
 		{
-			if ($resources["id"] === $item["resource_id"])
+			if ($resource["id"] === $item["resource_id"])
 			{
 				$found_match = true;
 				break;
@@ -317,7 +333,7 @@ class DonationPage
 		
 	}
 
-	public static function insert_from_json(mixed $json_object): void
+	public static function insert_from_json(mixed $json_object): DonationPage
 	{
 		Account::require_login();
 		require_once "user_input.inc.php";
@@ -330,26 +346,27 @@ class DonationPage
 		validate_page_name($json_object["name"]);
 		validate_page_content($json_object["page_content"]);
 		
-		$donatee_id = Account::get_session()["id"];
+		$donatee_id = Account::get_session()->id;
 		
 		$name = $json_object["name"];
 		$created_at = new DateTime();
+		$basket_content = $json_object["basket"]["content"];	
+		validate_basket_content($basket_content);
+
+		// {"id":0,"basket":{"content":[{"id":0,"resource_id":1,"quantity":1}]},"page_content":"<!doctype html><html><head><title>Example<\/title><\/head><body><h1>Example<\/h1><p> This is an example page. <\/p><\/body><\/html>","name":"Example"}
 		
 		try
 		{
 			$query = DatabaseQuery::from_file("queries/insert_donation_page.sql");
 			$page_id = Database::insert(true, $query, "is", $donatee_id, $name);
-			
 
-			$basket_content = $json_object["basket"]["content"];	
-			validate_basket_content($basket_content);
 
 			foreach ($basket_content as $item)
 			{
-				$quantity_asked = $item["quantity_asked"];
+				$quantity_asked = $item["quantity"];
 				$resource_id = $item["resource_id"];
 				$query = &DatabaseQuery::from_file("queries/insert_donation_page_entry.sql");
-				$page_id = Database::insert(true, $query, "iii", $page_id, $resource_id, $quantity_asked);
+				$entry_id = Database::insert(true, $query, "iii", $page_id, $resource_id, $quantity_asked);
 			}
 		}
 		catch (Exception $e)
@@ -358,8 +375,15 @@ class DonationPage
 			exit_with_status("Page name already exists.", status_code: 400);
 		}	
 		
-		$file = fopen("users/" . $name . ".html", "w");
-		fwrite($file, $json_object["page_content"]);
+		$file = fopen("user/" . $name . ".html", "a");
+		
+		if ($file) 
+		{
+			fwrite($file, $json_object["page_content"]);
+			fclose($file);
+		}
+
+		return new DonationPage($page_id, $donatee_id, $name, $created_at);
 	}
 }
 
@@ -553,7 +577,7 @@ class Resources
 	public string $name;
 	public string $description;
 	
-	public static ?mysqli_result $resource_set;
+	public static ?mysqli_result $resource_set = null;
 
 	public function __construct(int $id, string $name, string $description) 
 	{

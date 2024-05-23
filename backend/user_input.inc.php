@@ -1,6 +1,9 @@
 <?php
 require_once "error.inc.php";
 
+header("Access-Control-Allow-Origin: *"); // Adjust as needed
+header("Access-Control-Allow-Credentials: true");
+
 function get_json_from_post(): array
 {
 	expect_post();
@@ -204,7 +207,7 @@ function is_valid_attribute($tag_name, $attribute_name) {
 
 function validate_page_section(DOMNode|null &$page_section): bool
 {
-	$allowed_tags = array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'img');	
+	$allowed_tags = array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'img', 'title', 'meta');	
 
 	if ($page_section === null)
 	{
@@ -269,7 +272,7 @@ function validate_page_content(mixed &$page_content)
 	
 	if (!$head || !$body)
 	{
-		exit_with_status(message: "Failed parsing html.", status_code: 400);
+		exit_with_status(message: "Missing head or body.", status_code: 400);
 	}
 
 	return validate_page_section($head) && validate_page_section($body);

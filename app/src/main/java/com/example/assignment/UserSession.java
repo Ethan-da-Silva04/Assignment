@@ -14,13 +14,23 @@ public class UserSession {
 
     public static UserSession get() { return session; }
 
+    public static int getId() { return session.data.getId(); }
+
     public static User getData() { return session.data; }
+
+    public static void logout() {
+        session = null;
+    }
 
     public static UserSession login(String username, String password) throws ServerResponseException, JSONException {
         if (session != null) {
             return session;
         }
         return WebClient.login(username, password);
+    }
+
+    public static boolean exists() {
+        return session != null;
     }
 
     public static UserSession signup(String username, String password, String biography, String phoneNumber) throws ServerResponseException, JSONException {

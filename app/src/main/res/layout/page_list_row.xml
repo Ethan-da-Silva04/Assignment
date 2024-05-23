@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:gravity="center_vertical"
+    android:layout_gravity="center_vertical"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/txt_number"
+        android:layout_marginLeft="5sp"
+        android:textSize="18dp"
+        android:textColor="#ff888888"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NN" />
+
+    <TextView
+        android:id="@+id/txt_name"
+        android:textSize="18dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30sp"
+        android:layout_toRightOf="@id/txt_number"
+        android:text="TTTTTTTTTTTTTTTTTTT" />
+
+</RelativeLayout>

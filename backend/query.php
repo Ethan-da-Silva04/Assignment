@@ -16,9 +16,13 @@ class DatabaseQuery
 
 	public static function from_file(string $file_path): self
 	{
-		if (isset(self::$cached_queries, $file_path)) {
+		/*
+		if (isset(self::$cached_queries, $file_path)) 
+		{
+			error_log(message: "QIUHFQOWIUHOWIUHFOQWIUGHW");
 			return self::$cached_queries[$file_path];
 		}
+		*/
 
 		$file = fopen($file_path, "r");
 

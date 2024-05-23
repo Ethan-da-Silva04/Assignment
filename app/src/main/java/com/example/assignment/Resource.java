@@ -22,6 +22,29 @@ public class Resource {
         this.description = description;
     }
 
+    public static String[] getNames() {
+        Map<Integer, Resource> resources = getResources();
+        String[] result = new String[resources.size()];
+        int i = 0;
+
+        for (Map.Entry<Integer, Resource> entries : resources.entrySet()) {
+            result[i++] = entries.getValue().getName();
+        }
+
+        return result;
+    }
+
+    public static Resource getFromName(String name) {
+        Map<Integer, Resource> resources = getResources();
+
+        for (Map.Entry<Integer, Resource> entries : resources.entrySet()) {
+            if (entries.getValue().name.equals(name)) {
+                return entries.getValue();
+            }
+        }
+        return null;
+    }
+
     public String getName() {
         return name;
     }

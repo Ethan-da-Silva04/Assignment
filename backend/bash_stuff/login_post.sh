@@ -1,6 +1,7 @@
 #! /bin/bash
 
-curl --header "Content-Type: application/json" \
+curl --cookie-jar \
+  --header "Content-Type: application/json" \
   --request POST \
-  --data '{"username":"test_user","password":"password"}' \
-  http://127.0.0.1:8000/login.php
+  --data '{"username":"orhil","password":"password"}' \
+  http://192.168.1.105:8000/login.php

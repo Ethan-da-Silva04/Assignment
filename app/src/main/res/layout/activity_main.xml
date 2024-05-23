@@ -2,41 +2,104 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background_gradient"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:autoSizeMaxTextSize="70sp"
+        android:autoSizeMinTextSize="12sp"
+        android:autoSizeTextType="uniform"
+        android:maxLines="1"
+        android:rotation="0"
+        android:rotationX="0"
+        android:rotationY="0"
         android:text="ShareCycle"
-        android:textSize="32sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:textAlignment="center"
+
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="70sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/nextPage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="foobar"
-        android:text="Login"
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/signin_button"
+        style="@style/Widget.AppCompat.Button.Small"
+        android:layout_width="356dp"
+        android:layout_height="50dp"
+        android:textAllCaps="false"
+
+
+        android:layout_marginBottom="24dp"
+
+        android:background="@color/buttonBackground"
+        android:gravity="center"
+        android:onClick="showSignup"
+        android:text="Register"
+        android:textColor="#FFFFFF"
+        android:textSize="25dp"
+        android:textStyle="normal"
+        app:cornerRadius="10sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/next_button"
+        style="@style/Widget.AppCompat.Button.Small"
+        android:layout_width="356dp"
+        android:layout_height="50dp"
+        android:textAllCaps="false"
+
+
+        android:layout_marginBottom="16dp"
+        android:background="@color/buttonBackground"
+        android:gravity="center"
+        android:onClick="showLogin"
+        android:text="Login"
+        android:textColor="#FFFFFF"
+        android:textSize="25dp"
+        android:textStyle="normal"
+        app:cornerRadius="10sp"
+        app:layout_constraintBottom_toTopOf="@+id/signin_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="4dp"
+        android:background="#00000000"
+        android:gravity="center"
+        android:onClick="showInformation"
+        android:textAllCaps="false"
+
+        android:layout_marginEnd="12dp"
+        android:drawableLeft="@drawable/baseline_info_24"
+        android:paddingLeft="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/button3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Share"
-        android:onClick="share"
+        android:onClick="testFeature"
+        android:text="Test Button"
+        app:layout_constraintBottom_toTopOf="@+id/next_button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nextPage" />
+        app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
