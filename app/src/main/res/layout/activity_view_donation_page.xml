@@ -28,6 +28,7 @@
         style="@style/Widget.AppCompat.Button.Small"
         android:layout_width="356dp"
         android:layout_height="50dp"
+        android:onClick="showCreateBasket"
 
 
         android:layout_marginBottom="24dp"

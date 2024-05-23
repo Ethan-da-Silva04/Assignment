@@ -8,6 +8,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -25,17 +26,14 @@ public class CreateBasketActivity extends AppCompatActivity {
     private AutoCompleteTextView autoCompleteText;
     private Basket basket;
 
-    private String donationPageName = null;
+    private DonationPage page;
 
     public void postPage(View view) {
-        DonationPage page = DonationPage.getPage(donationPageName);
         page.setBasket(basket);
 
         try {
             JSONObject serialized = page.serialize();
-            System.out.println("THIS ONE IS IMPORTANT " + serialized);
             ServerResponse response = WebClient.postJSON("post_donation_page.php", serialized);
-            System.out.println(response.getData());
             Toast.makeText(this, "Page successfully posted!", Toast.LENGTH_SHORT).show();
             page.setId((Integer) response.getData().getJSONObject(0).get("id"));
         } catch (ServerResponseException e) {
@@ -43,6 +41,26 @@ public class CreateBasketActivity extends AppCompatActivity {
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
+        Intent intent = new Intent(this, HomepageActivity.class);
+        startActivity(intent);
+    }
+
+    public void postContribution(View view) {
+        // TODO: Test me
+        Contribution contribution = Contribution.fromSession(page.getId(), basket);
+        JSONObject serialized = null;
+        try {
+            serialized = contribution.serialize();
+            ServerResponse response = WebClient.postJSON("post_contribution.php", serialized);
+            Toast.makeText(this, "Contribution successfully posted!", Toast.LENGTH_SHORT).show();
+            contribution.setId((Integer) response.getData().getJSONObject(0).get("id"));
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        } catch (ServerResponseException e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        Intent intent = new Intent(this, SearchPagesActivity.class);
+        startActivity(intent);
     }
 
     @Override
@@ -52,11 +70,27 @@ public class CreateBasketActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         if (intent.getStringExtra("DonationPageName") != null) {
-            donationPageName = intent.getStringExtra("DonationPageName");
+            page = DonationPage.getPage(intent.getStringExtra("DonationPageName"));
         }
 
+        String mode = intent.getStringExtra("Mode");
+        Button next = findViewById(R.id.next_button);
 
-
+        if (mode.equals("Contribute")) {
+            next.setText("Post Contribution");
+            next.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) { postContribution(v); }
+            });
+        } else if (mode.equals("CreatePage")) {
+            next.setText("Post Page");
+            next.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) { postPage(v); }
+            });
+        } else {
+            Toast.makeText(getApplicationContext(), "Failed determining mode.", Toast.LENGTH_SHORT).show();
+        }
 
         basket = new Basket();
 

@@ -40,14 +40,6 @@ public class Contribution implements JSONSerializable {
         return contribution;
     }
 
-    public static Contribution fromJSONArray(JSONArray array) {
-        try {
-            return Contribution.fromJSONObject(array.getJSONObject(0));
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static Contribution fromJSONObject(JSONObject object) {
 
         try {
@@ -61,31 +53,17 @@ public class Contribution implements JSONSerializable {
         }
     }
 
+    public void setId(int id) { this.id = id; }
+
     public Basket getBasket() {
         return basket;
     }
 
     @Override
     public JSONObject serialize() throws JSONException {
-        JSONObject result = new JSONObject();
-        result.put("basket", basket.serialize());
-        result.put("poster_id", posterId);
-        result.put("recipient_page_id", recipientPageId);
-        return result;
-    }
-
-    public ServerResponse post() throws ServerResponseException {
-        try {
-            ServerResponse response = WebClient.postJSON("post_contribution.php", serialize());
-            JSONObject object = (JSONObject) response.getData().get(0);
-            System.out.println(object);
-            return response;
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static Contribution deserialize(JSONObject object) {
-        return Contribution.fromJSONObject(object);
+        return new JSONObject()
+            .put("basket", basket.serialize())
+            .put("poster_id", posterId)
+            .put("recipient_page_id", recipientPageId);
     }
 }

@@ -43,6 +43,7 @@ public class CreatePageActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CreateBasketActivity.class);
 
         intent.putExtra("DonationPageName", page.getName());
+        intent.putExtra("Mode", "CreatePage");
 
         startActivity(intent);
     }

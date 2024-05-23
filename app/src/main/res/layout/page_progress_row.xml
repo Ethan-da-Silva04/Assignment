@@ -10,7 +10,7 @@
         android:id="@+id/txt_number"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5sp"
+        android:layout_marginLeft="10sp"
         android:text="NN"
         android:textColor="#ff888888"
         android:textSize="18dp" />
@@ -26,10 +26,13 @@
 
     <ProgressBar
         android:id="@+id/progressBar"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/txt_number" />
+        android:layout_below="@id/txt_number"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginRight="20dp" />
 </RelativeLayout>

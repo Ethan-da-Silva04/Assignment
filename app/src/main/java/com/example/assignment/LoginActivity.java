@@ -29,11 +29,10 @@ public class LoginActivity extends AppCompatActivity {
 
     public void performLogin(View view) {
         if (UserSession.exists()) {
-            System.out.println("Existenced already!!!");
             Toast.makeText(this, "Already logged in!", Toast.LENGTH_SHORT).show();
             return;
         }
-        EditText usernameEditText = findViewById(R.id.editTextUsername);
+        EditText usernameEditText = findViewById(R.id.editTextSearchUser);
         EditText passwordEditText = findViewById(R.id.editTextRetypePassword);
         String username = usernameEditText.getText().toString();
         String password = passwordEditText.getText().toString();
@@ -41,6 +40,8 @@ public class LoginActivity extends AppCompatActivity {
             UserSession session = UserSession.login(username, password);
             Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
             System.out.println(session.get());
+            Intent intent = new Intent(this, HomepageActivity.class);
+            startActivity(intent);
             return;
         } catch (ServerResponseException e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();

@@ -4,12 +4,21 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.webkit.WebView;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
 public class ViewDonationPageActivity extends AppCompatActivity {
     private DonationPage page;
+
+    public void showCreateBasket(View view) {
+        Intent intent = new Intent(this, CreateBasketActivity.class);
+        intent.putExtra("Mode", "Contribute");
+        intent.putExtra("DonationPageName", page.getName());
+        startActivity(intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,5 +40,9 @@ public class ViewDonationPageActivity extends AppCompatActivity {
         WebView webView = scrollView.findViewById(R.id.webView);
 
         webView.loadData(page.getContent(), "text/html", "UTF-8");
+
+        ListView listView = scrollView.findViewById(R.id.listView);
+        PageProgressAdapter adapter = new PageProgressAdapter(getApplicationContext(), page);
+        listView.setAdapter(adapter);
     }
 }

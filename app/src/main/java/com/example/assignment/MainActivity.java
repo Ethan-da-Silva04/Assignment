@@ -59,7 +59,8 @@ public class MainActivity extends AppCompatActivity {
     public void testFeature(View view) {
         // Intent intent = new Intent(this, ViewDonationPageActivity.class);
         //startActivity(intent);
-        showSearchPages(view);
+        //showSearchPages(view);
+        showHomepage(view);
     }
 
     public void showCreatePage(View view) {
@@ -72,20 +73,9 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void testBasket() {
-        try {
-            DonationPage templateSearch = new DonationPage("Some name");
-            List<DonationPage> pages = new Search<DonationPage>().run(
-                    new SearchQuery("search_pages_by_name.php"),
-                    DonationPage::fromJSONObject,
-                    templateSearch,
-                    "name"
-            );
-        } catch (Exception e) {
-            Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
-        }
-
-        Toast.makeText(this, "Sent basket to server!", Toast.LENGTH_SHORT).show();
+    public void showHomepage(View view) {
+        Intent intent = new Intent(this, HomepageActivity.class);
+        startActivity(intent);
     }
 
     public void share(View view) {

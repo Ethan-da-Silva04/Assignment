@@ -11,5 +11,4 @@ $phone_number = $data["phone_number"];
 
 session_start();
 echo json_encode([Account::register($username, $password, $biography, $phone_number)]);
-
 ?>

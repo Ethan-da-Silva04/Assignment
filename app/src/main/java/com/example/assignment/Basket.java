@@ -1,5 +1,7 @@
 package com.example.assignment;
 
+import static java.util.Collections.sort;
+
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -7,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +34,57 @@ public class Basket implements JSONSerializable {
         id = nextId++;
         items = new ArrayList<>();
         createdBaskets.put(id, this);
+    }
+
+    /* Only works when the items are sorted by the resource id's. Do not call if this is not the case */
+    private DonationItem searchByResource(Resource resource) {
+        int left = 0;
+        int right = items.size() - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            int resourceId = items.get(mid).getResourceId();
+            if (resourceId == resource.getId()) {
+                return items.get(mid);
+            }
+
+            if (resourceId < resource.getId()) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+        return null;
+    }
+
+    public Basket difference(Basket other) {
+        Comparator<DonationItem> comparator = new Comparator<DonationItem>() {
+            @Override
+            public int compare(DonationItem fst, DonationItem snd) {
+                return fst.getResourceId() - snd.getResourceId();
+            }
+        };
+
+        items.sort(comparator);
+        other.items.sort(comparator);
+        Basket result = new Basket();
+        result.items.addAll(this.items);
+
+        for (int i = 0; i < result.items.size(); i++) {
+            DonationItem item = result.items.get(i);
+            DonationItem otherItem = other.searchByResource(result.items.get(i).getResource());
+
+            if (otherItem.getQuantity() >= item.getQuantity()) {
+                result.items.remove(i);
+                i--;
+                continue;
+            }
+
+            item.setQuantity(item.getQuantity() - otherItem.getQuantity());
+        }
+
+        return result;
     }
 
     public static Basket getBasket(int id) {

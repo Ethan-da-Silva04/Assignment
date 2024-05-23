@@ -6,13 +6,11 @@ require_once "query.php";
 Account::require_login();
 $json_object = get_json_from_post();
 $name = $json_object["name"];
-if (!is_string($name))
-{
+if (!is_string($name)) {
 	exit_with_status(message: "expected string name.", status_code: 400);
 }
 
-if (strlen($name) === 0) 
-{
+if (strlen($name) === 0) {
 	exit_with_status(message: "cannot search with an empty query.", status_code: 400);
 }
 

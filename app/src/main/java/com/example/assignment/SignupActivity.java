@@ -27,7 +27,7 @@ public class SignupActivity extends AppCompatActivity {
             Toast.makeText(this, "Already logged inz!", Toast.LENGTH_SHORT).show();
             return;
         }
-        EditText usernameEditText = findViewById(R.id.editTextUsername);
+        EditText usernameEditText = findViewById(R.id.editTextSearchUser);
         EditText passwordEditText = findViewById(R.id.editTextPassword);
         EditText phoneNumberEditText = findViewById(R.id.editTextPageSearch);
         String username = usernameEditText.getText().toString();
@@ -41,6 +41,8 @@ public class SignupActivity extends AppCompatActivity {
         try {
             UserSession session = UserSession.signup(username, password, "Hello, I'm a new user of ShareCycle!", phoneNumber);
             Toast.makeText(this, "Signup successful!", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, HomepageActivity.class);
+            startActivity(intent);
         } catch (ServerResponseException e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         } catch (JSONException e) {
