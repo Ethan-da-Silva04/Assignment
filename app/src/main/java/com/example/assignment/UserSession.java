@@ -22,6 +22,10 @@ public class UserSession {
         session = null;
     }
 
+    public static void setUsername(String username) { session.data.setUsername(username); }
+
+    public static void setBiography(String biography) {session.data.setBiography(biography); }
+
     public static UserSession login(String username, String password) throws ServerResponseException, JSONException {
         if (session != null) {
             return session;

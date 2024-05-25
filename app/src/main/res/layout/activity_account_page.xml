@@ -4,87 +4,110 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@drawable/background_gradient">
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/page_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:text="My Account"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textSize="30sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.057" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/textView6"
+    <EditText
+        android:id="@+id/txt_username"
         android:layout_width="116dp"
         android:layout_height="41dp"
-        android:layout_marginTop="16dp"
         android:gravity="center_vertical"
+        android:background="#00000000"
         android:paddingLeft="5dp"
         android:text="Username"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+        app:layout_constraintTop_toBottomOf="@+id/divider6" />
 
-    <TextView
-        android:id="@+id/textView9"
-        android:layout_width="113dp"
-        android:layout_height="43dp"
+    <EditText
+        android:id="@+id/txt_biography"
+        android:layout_width="200dp"
+        android:layout_height="90dp"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="90dp"
         android:gravity="center_vertical"
         android:paddingLeft="5dp"
         android:text="Biography"
-        android:textColor="@color/black"
+        android:background="#00000000"
+        android:textColor="@color/white"
         app:layout_constraintBottom_toTopOf="@+id/textView11"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView6" />
+        app:layout_constraintTop_toBottomOf="@+id/txt_username"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/back_button"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="#00323232"
+        android:drawableLeft="@drawable/baseline_arrow_back_ios_new_24"
+        android:gravity="left|center_vertical"
+        android:paddingLeft="1dp"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textView10"
+        android:id="@+id/txt_rank"
         android:layout_width="122dp"
         android:layout_height="41dp"
-        android:gravity="center_vertical"
+        android:gravity="center_vertical|right"
         android:paddingLeft="5dp"
+        android:paddingRight="20dp"
         android:text="Rank"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+        app:layout_constraintTop_toBottomOf="@+id/divider6" />
 
     <Button
         android:id="@+id/editUsername_button"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="8dp"
+        android:background="#00000000"
         android:backgroundTint="@color/white"
         android:drawableTop="@drawable/baseline_edit_24"
-        app:layout_constraintStart_toEndOf="@+id/textView6"
-        tools:layout_editor_absoluteY="96dp" />
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="@+id/txt_username"
+        app:layout_constraintStart_toEndOf="@+id/txt_username"
+        app:layout_constraintTop_toTopOf="@+id/txt_username"
+        app:layout_constraintVertical_bias="0.0" />
 
     <Button
         android:id="@+id/editBiography_button"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginStart="4dp"
+        android:background="#00000000"
         android:backgroundTint="@color/white"
         android:drawableTop="@drawable/baseline_edit_24"
-        app:layout_constraintStart_toEndOf="@+id/textView9"
-        tools:layout_editor_absoluteY="141dp" />
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="@+id/txt_biography"
+        app:layout_constraintStart_toEndOf="@+id/txt_biography"
+        app:layout_constraintTop_toTopOf="@+id/txt_biography" />
 
     <TextView
         android:id="@+id/textView11"
         android:layout_width="119dp"
         android:layout_height="33dp"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:text="History"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textSize="18dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/divider4"
@@ -96,6 +119,7 @@
         android:layout_width="365dp"
         android:layout_height="350dp"
         android:layout_marginBottom="84dp"
+        android:background="@drawable/rounded_outline"
 
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -105,11 +129,12 @@
         app:layout_constraintVertical_bias="1.0" />
 
     <Button
-        android:id="@+id/button7"
+        android:id="@+id/logout_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="#4896B5"
-        android:text="Log Out"
+        android:text="Logout"
+        android:onClick="logout"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.929"
@@ -118,14 +143,14 @@
         app:layout_constraintVertical_bias="0.277" />
 
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/report_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:backgroundTint="#4896B5"
         android:text="Report"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/button7"
+        app:layout_constraintEnd_toStartOf="@+id/logout_button"
         app:layout_constraintHorizontal_bias="0.125"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -137,5 +162,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:layout_editor_absoluteY="287dp" />
+
+    <View
+        android:id="@+id/divider6"
+        android:layout_width="409dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/page_title" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

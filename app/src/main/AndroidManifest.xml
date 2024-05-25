@@ -14,7 +14,13 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ContributeActivity"
+            android:exported="false" />
+        <activity
             android:name=".HomepageActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AccountActivity"
             android:exported="false" />
         <activity
             android:name=".SearchPagesActivity"

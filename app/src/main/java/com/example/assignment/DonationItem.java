@@ -11,6 +11,12 @@ public class DonationItem implements JSONSerializable {
     // avoiding inheritance as it will make everything more complicated with refactoring, instead opting for a variable that is sometimes unused
     private int quantityRecieved;
 
+    public DonationItem(int id, Resource resource, int quantity) {
+        this.id = id;
+        this.resource = resource;
+        this.quantity = quantity;
+    }
+
     public DonationItem(Resource resource, int quantity) {
         this.resource = resource;
         this.quantity = quantity;

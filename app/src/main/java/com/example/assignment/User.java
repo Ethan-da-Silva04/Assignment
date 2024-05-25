@@ -7,14 +7,17 @@ import org.json.JSONObject;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class User {
+    private static Map<Integer, User> userMap;
+
     private int id;
     private String username;
     private String biography;
     private String phoneNumber;
-    private LocalDateTime createdAt;
     private int accountRank;
     private int acceptedContributions;
 
@@ -25,7 +28,16 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.accountRank = accountRank;
         this.acceptedContributions = acceptedContributions;
+        putUser(this);
     }
+
+    private static void putUser(User user) {
+        userMap.putIfAbsent(user.getId(), user);
+    }
+
+    public String getBiography() { return biography; }
+
+    public static User getFromId(int id) { return userMap.get(id); }
 
     public static User fromJSONObject(JSONObject object) throws JSONException {
         int id = (int) object.get("id");
@@ -58,6 +70,14 @@ public class User {
         return result;
     }
 
+    public void setBiography(String biography) {
+        this.biography = biography;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public static List<User> searchBy(String username) throws ServerResponseException {
         List<User> result = new ArrayList<>();
 
@@ -84,5 +104,9 @@ public class User {
     public String toString() {
         return String.format("id: %d, username: %s, biography: %s, phoneNumber: %s\n",
                 id, username, biography, phoneNumber);
+    }
+
+    static {
+        userMap = new HashMap<>();
     }
 }

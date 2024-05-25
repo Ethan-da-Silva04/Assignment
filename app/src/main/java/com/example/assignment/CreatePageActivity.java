@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class CreatePageActivity extends AppCompatActivity {
     public void partialConstructPage(View view) {
@@ -34,12 +36,34 @@ public class CreatePageActivity extends AppCompatActivity {
     }
 
 
+    public void showHome(View view) {
+        Intent intent = new Intent(this, HomepageActivity.class);
+        startActivity(intent);
+    }
+
+
     public void showMain(View view) {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
     }
 
     public void showCreateBasket(View view, DonationPage page) {
+        EditText editName = findViewById(R.id.editTextPageSearch);
+        EditText editWhyDonate = findViewById(R.id.editTextWhyDonate);
+
+        String name = editName.getText().toString();
+        String whyDonate = editWhyDonate.getText().toString();
+
+        if (name == null || name.equals("")) {
+            Toast.makeText(getApplicationContext(), "Cannot have an empty name.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (whyDonate == null || whyDonate.equals("")) {
+            Toast.makeText(getApplicationContext(), "Cannot have an empty description.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Intent intent = new Intent(this, CreateBasketActivity.class);
 
         intent.putExtra("DonationPageName", page.getName());
@@ -52,5 +76,7 @@ public class CreatePageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_page);
+        Button backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(new ClickBackListener(this));
     }
 }

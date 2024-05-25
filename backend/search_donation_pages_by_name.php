@@ -11,9 +11,8 @@ if (!is_string($name)) {
 }
 
 if (strlen($name) === 0) {
-	exit_with_status(message: "cannot search with an empty query.", status_code: 400);
+	exit_with_status(message: "Cannot search with an empty query.", status_code: 400);
 }
-
 
 $query = DatabaseQuery::from_file("queries/select_search_page.sql");
 $result =  Database::result_to_json(Database::select($query, "s", $name));

@@ -1,2 +1,1 @@
-1. Account Reporting
-2. Decompose queries into seperate files so that query handler works as intented
+1. Stop queries from sending over password hashes where this is done, it is unneccessary and unsafe.

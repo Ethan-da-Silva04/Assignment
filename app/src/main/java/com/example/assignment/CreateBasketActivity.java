@@ -19,7 +19,6 @@ public class CreateBasketActivity extends AppCompatActivity {
     private String[] dropdownItems;
     private ArrayAdapter<String> adapterItems;
 
-
     ListView listView;
     BasketListViewAdapter basketAdapter;
 
@@ -27,6 +26,8 @@ public class CreateBasketActivity extends AppCompatActivity {
     private Basket basket;
 
     private DonationPage page;
+
+    private Contribution contribution;
 
     public void postPage(View view) {
         page.setBasket(basket);
@@ -41,25 +42,35 @@ public class CreateBasketActivity extends AppCompatActivity {
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
-        Intent intent = new Intent(this, HomepageActivity.class);
+        Intent intent = new Intent(CreateBasketActivity.this, HomepageActivity.class);
         startActivity(intent);
     }
 
     public void postContribution(View view) {
-        // TODO: Test me
-        Contribution contribution = Contribution.fromSession(page.getId(), basket);
+        Contribution contribution = (this.contribution != null) ? this.contribution : Contribution.fromSession(page.getId(), basket);
+        contribution.setRecipientPageId(page.getId());
         JSONObject serialized = null;
         try {
             serialized = contribution.serialize();
             ServerResponse response = WebClient.postJSON("post_contribution.php", serialized);
             Toast.makeText(this, "Contribution successfully posted!", Toast.LENGTH_SHORT).show();
             contribution.setId((Integer) response.getData().getJSONObject(0).get("id"));
+            if (this.contribution != null) {
+                this.contribution.getBasket().subtract(basket);
+            }
+            startActivity(new Intent(CreateBasketActivity.this, HomepageActivity.class));
         } catch (JSONException e) {
             throw new RuntimeException(e);
         } catch (ServerResponseException e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-        Intent intent = new Intent(this, SearchPagesActivity.class);
+    }
+
+    public void prepareContribution(View view) {
+        Contribution contribution = new Contribution(basket);
+        Intent intent = new Intent(this, SearchPagesActivity.class)
+                .putExtra("Mode", "BasketSearch")
+                .putExtra("ContributionMapId", contribution.getMapId());
         startActivity(intent);
     }
 
@@ -73,26 +84,36 @@ public class CreateBasketActivity extends AppCompatActivity {
             page = DonationPage.getPage(intent.getStringExtra("DonationPageName"));
         }
 
+        basket = new Basket();
         String mode = intent.getStringExtra("Mode");
-        Button next = findViewById(R.id.next_button);
+        Button next = findViewById(R.id.username);
+        Button back = findViewById(R.id.back_button);
+        final CreateBasketActivity activity = this;
+        back.setOnClickListener(new ClickBackListener(this));
 
-        if (mode.equals("Contribute")) {
+        dropdownItems = Resource.getNames();
+        autoCompleteText = findViewById(R.id.auto_complete_txt);
+        adapterItems = new ArrayAdapter<>(this, R.layout.resource_select_item, dropdownItems);
+        autoCompleteText.setAdapter(adapterItems);
+
+        if (mode.equals("ContributeWithNewBasket")) {
             next.setText("Post Contribution");
-            next.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) { postContribution(v); }
-            });
+            next.setOnClickListener(v -> postContribution(v));
+        }  else if (mode.equals("ContributeWithExisting")) {
+            next.setText("Post Contribution");
+            next.setOnClickListener(v -> postContribution(v));
+            contribution = Contribution.getContribution(intent.getIntExtra("ContributionMapId", -1));
+            basket.getItems().addAll(contribution.getBasket().getItems());
+            autoCompleteText.setVisibility(View.INVISIBLE);
+        } else if (mode.equals("PrepareContribution")) {
+            next.setText("Search Pages");
+            next.setOnClickListener(v -> prepareContribution(v));
         } else if (mode.equals("CreatePage")) {
             next.setText("Post Page");
-            next.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) { postPage(v); }
-            });
+            next.setOnClickListener(v -> postPage(v));
         } else {
             Toast.makeText(getApplicationContext(), "Failed determining mode.", Toast.LENGTH_SHORT).show();
         }
-
-        basket = new Basket();
 
         listView = findViewById(R.id.list_view);
         basketAdapter = new BasketListViewAdapter(getApplicationContext(), basket);
@@ -114,14 +135,7 @@ public class CreateBasketActivity extends AppCompatActivity {
 
         });
 
-
         basket.setListView(listView);
-
-        dropdownItems = Resource.getNames();
-
-        autoCompleteText = findViewById(R.id.auto_complete_txt);
-        adapterItems = new ArrayAdapter<>(this, R.layout.resource_select_item, dropdownItems);
-        autoCompleteText.setAdapter(adapterItems);
         autoCompleteText.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

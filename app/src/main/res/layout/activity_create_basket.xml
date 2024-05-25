@@ -25,7 +25,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/next_button"
+        android:id="@+id/username"
         style="@style/Widget.AppCompat.Button.Small"
         android:layout_width="356dp"
         android:layout_height="50dp"
@@ -110,6 +110,6 @@
         android:layout_height="1dp"
         android:layout_marginBottom="16dp"
         android:background="?android:attr/listDivider"
-        app:layout_constraintBottom_toTopOf="@+id/next_button" />
+        app:layout_constraintBottom_toTopOf="@+id/username" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

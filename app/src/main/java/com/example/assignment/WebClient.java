@@ -143,11 +143,11 @@ public class WebClient {
     }
 
     public static UserSession signup(String username, String password, String biography, String phoneNumber) throws ServerResponseException, JSONException {
-        JSONObject object = new JSONObject();
-        object.put("username", username);
-        object.put("password", password);
-        object.put("biography", biography);
-        object.put("phone_number", phoneNumber);
+        JSONObject object = new JSONObject()
+                .put("username", username)
+                .put("password", password)
+                .put("biography", biography)
+                .put("phone_number", phoneNumber);
 
         return UserSession.initialize(WebClient.postJSON("register", object).getData());
     }

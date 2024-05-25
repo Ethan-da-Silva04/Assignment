@@ -3,6 +3,7 @@ package com.example.assignment;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.List;
 import java.util.ArrayList;
@@ -10,6 +11,10 @@ import java.util.ArrayList;
 public class PendingContributionReceiver extends Thread {
     private static final int sleepTime = 120 * 60 * 1000;
     private Queue<Contribution> queue;
+
+    public PendingContributionReceiver() {
+        queue = new LinkedList<>();
+    }
 
     public boolean isEmpty() {
         return queue.isEmpty();

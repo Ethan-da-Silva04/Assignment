@@ -79,7 +79,7 @@ class Account {
 
 	public static function is_logged_in(): bool {
 		session_start();
-		return isset($_SESSION["__user"]);
+		return $_SESSION["__user"] !== null;
 	}
 
 	public static function get_logged_in(): Account|false {
@@ -89,6 +89,10 @@ class Account {
 		}	
 
 		return $_SESSION["__user"];
+	}
+
+	public static function logout(): void {
+		$_SESSION["__user"] = null;
 	}
 
 	public static function require_login(): void {
@@ -121,22 +125,43 @@ class Account {
 			$accepted_contribution_delta += $item.quantity;
 		}
 			
-		$id = $contribution->poster_id;
 		$rank_query = DatabaseQuery::from_file("queries/update_account_ranks.sql");
 		$entry_query = DatabaseQuery::from_file("queries/update_page_entries.sql");
 		try {
-			Database::update (
-				true, 
-				$rank_query,
-				"iiiii",
-				$id,
-				$accepted_contribution_delta,
-				$id,
-				$id,
-				$id
+			$old_account_details = Database::select("queries/select_user_by_id", "i", $contribution->poster_id)->fetch_assoc();
+			$old_accepted_contributions = $old_account_details["accepted_contributions"];
+			$account_created_at = $old_account_details["created_at"];
+			$old_accepted_contributions = Database::select(
+				DatabaseQuery::from_file("queries/select_account_contributions.sql"), 
+				"i", 
+				$contribution->poster_id
+			)->fetch_assoc()["value"];
+			$new_accepted_contributions = $old_accepted_contributions + $accepted_contribution_delta;
+			$new_rank = Database::select(
+				DatabaseQuery::from_file("queries/select_account_rank.sql"), 
+				"ii", 
+				$old_accepted_contributions, 
+				$new_accepted_contributions)->fetch_assoc()["value"];
+			
+
+			Database::update(true, DatabaseQuery::from_file("queries/update_account_contributions.sql"), "ii", $accepted_contribution_delta, $contribution->poster_id);
+
+			Database::update(true, 
+				$rank_query, 
+				"iiisiiiii", 
+				$old_accepted_contributions,
+				$new_accepted_contributions,
+				$new_accepted_contributions,
+				$account_created_at,
+				$contribution->poster_id,
+				$contribution->poster_id,
+				$new_rank,
+				$old_accepted_contributions,
+				$new_accepted_contributions
 			);
 
 			foreach ($contribution->contents as $entry) {
+				// TODO: Add adding accepted contribution entries.
 				Database::update(true, $entry_query, "ii", $entry->quantity, $contribution->recipient_page_id);
 			}
 		} catch (Exception $e) {
@@ -454,12 +479,17 @@ class Contribution {
 		if (!is_int($poster_id) || !is_int($recipient_page_id)) {
 			exit_with_status(message: "Poster or recipient id is in the wrong format.", status_code: 400);
 		}
+		
+		Account::require_login_of_user($poster_id);
 
-		if ($poster_id === $recipient_page_id) {
-			exit_with_status(message: "Cannot donate to oneself.", status_code: 400);
+		$row = Database::select(DatabaseQuery::from_file("queries/select_page_donatee.sql"), "i", $recipient_page_id)->fetch_assoc();
+		if (!$row) {
+			exit_with_status(message: "Cannot donate to a page that does not exist.", status_code: 400);
 		}
 
-		Account::require_login_of_user($poster_id);
+		if ($row["donatee_id"] === $poster_id) {
+			exit_with_status(message: "Cannot donate to oneself.", status_code: 400);
+		}
 
 		validate_basket_content($basket_content);
 

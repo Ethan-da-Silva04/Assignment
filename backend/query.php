@@ -133,44 +133,31 @@ class Database {
 		}
 	}
 
-	public static function update(bool $commit_transaction, DatabaseQuery &$query, string $types, mixed ...$bind_params): mysqli_result {
+	public static function update(bool $commit_transaction, DatabaseQuery &$query, string $types, mixed ...$bind_params): void {
 		try {
 			$connection = &self::get_connection();
 			$connection->begin_transaction();
 
 			$stmt = self::execute_from_query($query, $types, ...$bind_params);
 
-			$result = $stmt->get_result();
-			if (!$result) {
-				exit_with_status(message: "Failed getting result from query.", status_code: 500);
-			}
-
 			if ($commit_transaction) {
 				$connection->commit();
 			}
 			
-			return $result;
 		} catch (Exception $e) {
 			throw new Exception($e);
 		}
 	}	
 
-	public static function delete(bool $commit_transaction, DatabaseQuery &$query, string $types, mixed &...$bind_params): mysqli_result {
+	public static function delete(bool $commit_transaction, DatabaseQuery &$query, string $types, mixed &...$bind_params): void{
 		try {
 			$connection = &self::get_connection();
 			$connection->begin_transaction();
 
 			$stmt = self::execute_from_query($query, $types, ...$bind_params);
-			$result = $stmt->get_result();
-			if (!$result) {
-				exit_with_status(message: "Failed getting result from query.", status_code: 500);
-			}
-
 			if ($commit_transaction) {
 				$connection->commit();
 			}
-			
-			return $result;
 		} catch (Exception $e) {
 			throw new Exception($e);
 		}

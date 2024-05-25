@@ -1,5 +1,6 @@
 package com.example.assignment;
 
+import static java.util.Collections.addAll;
 import static java.util.Collections.sort;
 
 import android.widget.ListView;
@@ -20,7 +21,6 @@ import java.util.Map;
  */
 public class Basket implements JSONSerializable {
     private static final int MAX_RESOURCE = 10000;
-
 
     private int id = 0;
 
@@ -58,7 +58,7 @@ public class Basket implements JSONSerializable {
         return null;
     }
 
-    public Basket difference(Basket other) {
+    public static Basket difference(Basket fst, Basket snd) {
         Comparator<DonationItem> comparator = new Comparator<DonationItem>() {
             @Override
             public int compare(DonationItem fst, DonationItem snd) {
@@ -66,14 +66,14 @@ public class Basket implements JSONSerializable {
             }
         };
 
-        items.sort(comparator);
-        other.items.sort(comparator);
+        fst.items.sort(comparator);
+        snd.items.sort(comparator);
         Basket result = new Basket();
-        result.items.addAll(this.items);
+        result.items.addAll(fst.items);
 
         for (int i = 0; i < result.items.size(); i++) {
             DonationItem item = result.items.get(i);
-            DonationItem otherItem = other.searchByResource(result.items.get(i).getResource());
+            DonationItem otherItem = snd.searchByResource(result.items.get(i).getResource());
 
             if (otherItem.getQuantity() >= item.getQuantity()) {
                 result.items.remove(i);
@@ -85,6 +85,10 @@ public class Basket implements JSONSerializable {
         }
 
         return result;
+    }
+
+    public void subtract(Basket other) {
+        this.items = Basket.difference(this, other).getItems();
     }
 
     public static Basket getBasket(int id) {

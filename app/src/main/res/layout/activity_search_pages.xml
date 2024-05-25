@@ -51,7 +51,7 @@
         android:backgroundTint="#00323232"
         android:drawableLeft="@drawable/baseline_arrow_back_ios_new_24"
         android:gravity="left|center_vertical"
-        android:onClick="showMain"
+        android:onClick="showHome"
         android:paddingLeft="1dp"
         android:textAllCaps="false"
         android:textColor="@color/white"

@@ -5,21 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background_gradient"
-    tools:context=".CreatePageActivity">
+    tools:context=".ContributeActivity">
 
     <TextView
         android:id="@+id/textView4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="New Page"
+        android:text="Select how you want to contribute"
         android:textAlignment="center"
         android:textColor="@color/white"
-        android:textSize="36sp"
+        android:textSize="20sp"
         android:textStyle="normal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/header_title" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/username"
@@ -27,12 +26,10 @@
         android:layout_width="356dp"
         android:layout_height="50dp"
 
-
-        android:layout_marginBottom="24dp"
         android:background="@color/buttonBackground"
         android:gravity="center"
-        android:text="Next"
-        android:onClick="partialConstructPage"
+        android:onClick="showSearchPages"
+        android:text="Search Pages"
         android:textAllCaps="false"
         android:textColor="#FFFFFF"
         android:textSize="25dp"
@@ -40,47 +37,30 @@
         app:cornerRadius="10sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/by_basket_button"
+        style="@style/Widget.AppCompat.Button.Small"
+        android:layout_width="356dp"
+        android:layout_height="50dp"
+
+
+        android:layout_marginBottom="16dp"
+        android:background="@color/buttonBackground"
+        android:gravity="center"
+        android:onClick="showCreateBasket"
+        android:text="Create Basket"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:textSize="25dp"
+        android:textStyle="normal"
+        app:cornerRadius="10sp"
+        app:layout_constraintBottom_toTopOf="@+id/username"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.509"
         app:layout_constraintStart_toStartOf="parent" />
-
-    <EditText
-        android:id="@+id/editTextPageSearch"
-        android:layout_width="360dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="90dp"
-        android:background="@drawable/rounded_outline"
-        android:ems="10"
-        android:gravity="center_vertical"
-        android:hint="Donation Page Name"
-        android:inputType="text"
-        android:paddingLeft="5pt"
-        android:textColor="#FF323232"
-        android:textColorHint="#FFB7B7B7"
-        android:textSize="12sp"
-        android:textStyle="normal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/editTextWhyDonate"
-        android:layout_width="360dp"
-        android:layout_height="520dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/rounded_outline"
-        android:ems="10"
-        android:gravity="left|top"
-        android:hint="Why should people donate to this page? You can write some HTML here if you know how."
-        android:inputType="textMultiLine"
-
-        android:paddingLeft="5pt"
-        android:paddingTop="5dp"
-        android:textColor="#FF323232"
-        android:textColorHint="#FFB7B7B7"
-        android:textSize="12sp"
-        android:textStyle="normal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextPageSearch" />
 
     <Button
         android:id="@+id/back_button"
@@ -96,6 +76,20 @@
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/header_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Contribute"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="36sp"
+        android:textStyle="normal"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
