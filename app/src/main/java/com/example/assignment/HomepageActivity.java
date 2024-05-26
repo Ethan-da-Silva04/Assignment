@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -37,12 +36,15 @@ public class HomepageActivity extends AppCompatActivity {
 
     public void showAccountPage(View view) {
         Intent intent = new Intent(this, AccountActivity.class)
-                .putExtra("user_id", UserSession.getId());
+                .putExtra(Constants.KEY_USER_ID, UserSession.getId());
         startActivity(intent);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (contributionReceiver == null) {
+            contributionReceiver = new PendingContributionReceiver();
+        }
         // TODO: Add notification viewer
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
@@ -70,11 +72,7 @@ public class HomepageActivity extends AppCompatActivity {
 
                 try {
                     String text = v.getText().toString();
-                    if (text.isEmpty()) {
-                        searchedUsers = User.getTop();
-                    } else {
-                        searchedUsers = User.searchBy(v.getText().toString());
-                    }
+                    searchedUsers = text.isEmpty() ? User.getTop() : User.searchBy(text);
                     usersAdapter = new UsersAdapter(getApplicationContext(), searchedUsers);
                     listView.setAdapter(usersAdapter);
                 } catch (ServerResponseException e) {
@@ -86,7 +84,7 @@ public class HomepageActivity extends AppCompatActivity {
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             Intent intent = new Intent(HomepageActivity.this, AccountActivity.class)
-                    .putExtra("user_id", searchedUsers.get(position).getId());
+                    .putExtra(Constants.KEY_USER_ID, searchedUsers.get(position).getId());
             startActivity(intent);
         });
     }

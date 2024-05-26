@@ -58,6 +58,8 @@ public class Basket implements JSONSerializable {
         return null;
     }
 
+    public int size() { return items.size(); }
+
     public static Basket difference(Basket fst, Basket snd) {
         Comparator<DonationItem> comparator = new Comparator<DonationItem>() {
             @Override

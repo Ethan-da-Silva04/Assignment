@@ -4,6 +4,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +21,8 @@ public class DonationPage implements JSONSerializable {
     private String pageContent;
     private Basket basket;
     private int donateeId;
+
+    private LocalDateTime createdAt;
 
     public DonationPage(String name) {
         this.id = 0;
@@ -54,6 +58,12 @@ public class DonationPage implements JSONSerializable {
     public void setId(int id) {
         this.id = id;
     }
+
+    public void setCreatedAt(LocalDateTime dateTime) {
+        this.createdAt = dateTime;
+    }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
     /* This function fetches the page content, meant for when a link to a page is actually clicked */
     public User fetchPageContent() throws ServerResponseException {
@@ -94,6 +104,16 @@ public class DonationPage implements JSONSerializable {
                 .put("name", name);
     }
 
+    public static DonationPage getPageFromId(int pageId) {
+        for (DonationPage page : pendingPages.values()) {
+            if (page.getId() == pageId) {
+                return page;
+            }
+        }
+
+        return null;
+    }
+
     private static void addSearchQueryResult(JSONObject object, Map<Integer, DonationPage> pages) throws JSONException {
         int itemId = (int) object.get("id");
         int pageId = (int) object.get("page_id");
@@ -104,7 +124,13 @@ public class DonationPage implements JSONSerializable {
         int quantityReceived = (int) object.get("quantity_received");
 
         pages.putIfAbsent(pageId, new DonationPage(pageId, donateeId, pageName));
-        Basket basket = pages.get(pageId).getBasket();
+        DonationPage page = pages.get(pageId);
+        if (object.has("created_at")) {
+            LocalDateTime toSet = LocalDateTime.parse((CharSequence) object.get("created_at"), Constants.fromFormatter);
+            page.setCreatedAt(toSet);
+        }
+
+        Basket basket = page.getBasket();
         DonationItem item = new DonationItem(itemId, Resource.getFromId(resourceId), quantityAsked, quantityReceived);
         basket.add(item);
     }
@@ -117,9 +143,7 @@ public class DonationPage implements JSONSerializable {
 
     public static List<DonationPage> listFromPageMap(Map<Integer, DonationPage> pages) {
         List<DonationPage> result = new ArrayList<>();
-        for (Map.Entry<Integer, DonationPage> entry : pages.entrySet()) {
-            result.add(entry.getValue());
-        }
+        result.addAll(pages.values());
         return result;
     }
 

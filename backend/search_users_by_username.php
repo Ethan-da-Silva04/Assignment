@@ -14,5 +14,5 @@ if (strlen($username) == 0) {
 	exit_with_status(message: "cannot search with empty string", status_code: 400);
 }
 
-echo Database::result_to_json(Database::select(DatabaseQuery::from_file("queries/select_search_user.sql"), "s", $username));
+echo Database::result_to_json(Database::select(DBQuery::from_stored("select_search_user.sql"), "s", $username));
 ?>

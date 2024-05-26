@@ -2,11 +2,11 @@ package com.example.assignment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,7 +16,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AccountActivity extends AppCompatActivity {
     public void logout(View view) {
@@ -26,7 +28,7 @@ public class AccountActivity extends AppCompatActivity {
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         } catch (ServerResponseException e) {
-            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+            ServerExceptionHandler.handle(getApplicationContext(), e);
         }
     }
 
@@ -36,7 +38,7 @@ public class AccountActivity extends AppCompatActivity {
         setContentView(R.layout.activity_account_page);
 
         Intent intent = getIntent();
-        int userId = intent.getIntExtra("user_id", 0);
+        int userId = intent.getIntExtra(Constants.KEY_USER_ID, 0);
         User user = User.getFromId(userId);
         TextView rank = findViewById(R.id.txt_rank);
         rank.setText("Rank: " + String.valueOf(user.getRank()));
@@ -147,15 +149,23 @@ public class AccountActivity extends AppCompatActivity {
             postObject = new JSONObject().put("id", userId);
             ServerResponse response = WebClient.postJSON("request_history.php", postObject);
             JSONObject responseData = response.getData().getJSONObject(0);
-            System.out.println("VERY IMPORTANT" + responseData);
             List<Contribution> contributionList = Contribution.listFromJSONArray(responseData.getJSONArray("contributions"));
             List<DonationPage> pageList = DonationPage.listFromJSONArray(responseData.getJSONArray("pages"));
-            // TODO: Test this, and merge them together to put into list view
-            // TODO: Create an interface that will go into an adapter and define how the display for the donation pages and stuff will go
+
+            JSONArray array = responseData.getJSONArray("accepted_contributions");
+            Set<Integer> accepted = new HashSet<>();
+
+            for (int i = 0; i < array.length(); i++) {
+                accepted.add((Integer) array.get(i));
+            }
+
+            AccountHistoryAdapter historyAdapter = new AccountHistoryAdapter(getApplicationContext(), contributionList, pageList, accepted);
+            ListView view = findViewById(R.id.listView);
+            view.setAdapter(historyAdapter);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         } catch (ServerResponseException e) {
-            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+            ServerExceptionHandler.handle(getApplicationContext(), e);
         }
     }
 }

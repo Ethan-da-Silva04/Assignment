@@ -20,9 +20,11 @@ $contribution_entries_result_set = Database::select(
 				DatabaseQuery::from_file("queries/select_account_contributions.sql"), 
 				"i", 
 				$account_id);
-
+$accepted_contributions = Database::select(DatabaseQuery::from_file("queries/select_account_accepted.sql"), "i", $account_id)->fetch_all();
 $result["pages"] = array();
 $result["contributions"] = array();
+# this should just be an integer array
+$result["accepted_contributions"] = $accepted_contributions;
 
 while (($row = $page_entries_result_set->fetch_assoc())) {
 	$result["pages"][] = $row;

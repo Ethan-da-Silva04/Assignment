@@ -9,6 +9,6 @@ if (!is_int($id)) {
 }
 
 validate_biography($new_biography);
-Database::update(true, DatabaseQuery::from_file("queries/update_account_biography.sql"), "si", $new_biography, $id);
+Database::update(true, DBQuery::from_stored("update_account_biography.sql"), "si", $new_biography, $id);
 echo json_encode([]);
 ?>

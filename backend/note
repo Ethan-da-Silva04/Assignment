@@ -1,1 +1,0 @@
-Users cannot post their rank and expect the server to do anything, the server will look up the user and get their rank everytime. Otherwise the user can post their "rank" and decisions will be made on something false.

@@ -14,7 +14,7 @@ if (strlen($name) === 0) {
 	exit_with_status(message: "Cannot search with an empty query.", status_code: 400);
 }
 
-$query = DatabaseQuery::from_file("queries/select_search_page.sql");
+$query = DBQuery::from_stored("select_search_page.sql");
 $result =  Database::result_to_json(Database::select($query, "s", $name));
 echo $result;
 ?>

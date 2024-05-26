@@ -10,8 +10,7 @@ if (!is_int($id)) {
 validate_username($new_username);
 
 Account::require_login_of_user($id);
-
-$result_set = Database::select(DatabaseQuery::from_file("queries/select_user_by_username.sql"), "s",  $new_username);
+$result_set = Database::select(DBQuery::from_stored("select_user_by_username.sql"), "s",  $new_username);
 $row = $result_set->fetch_row();
 
 if ($row !== false && $row !== null) {
@@ -19,6 +18,6 @@ if ($row !== false && $row !== null) {
 	return;
 }
 
-Database::update(true, DatabaseQuery::from_file("queries/update_account_username.sql"), "si", $new_username, $id);
+Database::update(true, DBQuery::from_stored("update_account_username.sql"), "si", $new_username, $id);
 echo json_encode([]);
 ?>

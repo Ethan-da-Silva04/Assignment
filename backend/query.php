@@ -1,26 +1,20 @@
 <?php
-
 require_once 'entities.inc.php';
 require_once "error.inc.php";
 
-class DatabaseQuery {
-	private static array $cached_queries = array();
-
+class DBQuery {
+	private static string $source = "queries";
 	public string $data;
 
 	private function __construct(string $data) {
 		$this->data = $data;	
 	}
 
-	public static function from_file(string $file_path): self {
-		/*
-		if (isset(self::$cached_queries, $file_path)) 
-		{
-			error_log(message: "QIUHFQOWIUHOWIUHFOQWIUGHW");
-			return self::$cached_queries[$file_path];
-		}
-		*/
+	public static function from_stored(string $name): self {
+		return self::from_file(self::$source . "/" . $name);
+	}
 
+	public static function from_file(string $file_path): self {
 		$file = fopen($file_path, "r");
 
 		if ($file === null) {
@@ -34,7 +28,6 @@ class DatabaseQuery {
 			exit_with_status("Failed reading query.\n", status_code: 500);
 		}
 
-		self::$cached_queries[$file_path] = $contents;
 		return new self($contents);
 	}
 
@@ -65,7 +58,7 @@ class Database {
 		return self::$connection;
 	}
 
-	private static function execute_from_query(DatabaseQuery &$query, string $types, mixed ...$bind_params): mysqli_stmt {
+	private static function execute_from_query(DBQuery &$query, string $types, mixed ...$bind_params): mysqli_stmt {
 		$connection = &self::get_connection();
 		$stmt = $connection->prepare($query->data);
 		if (!$stmt) {
@@ -91,7 +84,7 @@ class Database {
 	/*
 	 * @return: the id of the inserted row
 	 */
-	public static function insert(bool $commit_transaction, DatabaseQuery &$query, string $types, mixed ...$bind_params): int|false {
+	public static function insert(bool $commit_transaction, DBQuery &$query, string $types, mixed ...$bind_params): int|false {
 		try {
 			$connection = &self::get_connection();
 			$connection->begin_transaction();
@@ -117,7 +110,7 @@ class Database {
 		return false;
 	}
 
-	public static function select(DatabaseQuery &$query, string $types, mixed ...$bind_params): mysqli_result {
+	public static function select(DBQuery &$query, string $types, mixed ...$bind_params): mysqli_result {
 		try {
 			$connection = &self::get_connection();
 			$stmt = self::execute_from_query($query, $types, ...$bind_params);
@@ -133,7 +126,7 @@ class Database {
 		}
 	}
 
-	public static function update(bool $commit_transaction, DatabaseQuery &$query, string $types, mixed ...$bind_params): void {
+	public static function update(bool $commit_transaction, DBQuery &$query, string $types, mixed ...$bind_params): void {
 		try {
 			$connection = &self::get_connection();
 			$connection->begin_transaction();
@@ -149,7 +142,7 @@ class Database {
 		}
 	}	
 
-	public static function delete(bool $commit_transaction, DatabaseQuery &$query, string $types, mixed &...$bind_params): void{
+	public static function delete(bool $commit_transaction, DBQuery &$query, string $types, mixed &...$bind_params): void{
 		try {
 			$connection = &self::get_connection();
 			$connection->begin_transaction();

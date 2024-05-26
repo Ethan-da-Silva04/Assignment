@@ -9,7 +9,7 @@ public class DonationItem implements JSONSerializable {
     private int quantity;
 
     // avoiding inheritance as it will make everything more complicated with refactoring, instead opting for a variable that is sometimes unused
-    private int quantityRecieved;
+    private int quantityReceived;
 
     public DonationItem(int id, Resource resource, int quantity) {
         this.id = id;
@@ -26,7 +26,7 @@ public class DonationItem implements JSONSerializable {
         this.id = id;
         this.resource = resource;
         this.quantity = quantityAsked;
-        this.quantityRecieved = quantityRecieved;
+        this.quantityReceived = quantityRecieved;
     }
 
     public int getResourceId() { return resource.getId(); }
@@ -43,11 +43,11 @@ public class DonationItem implements JSONSerializable {
     public void setQuantity(int quantity) { this.quantity = quantity; }
 
     public int getQuantityAsked() { return quantity; }
-    public int getQuantityRecieved() { return quantityRecieved; }
+    public int getQuantityReceived() { return quantityReceived; }
 
     public void setQuantityAsked(int quantityAsked) { this.quantity = quantityAsked; }
 
-    public void setQuantityRecieved(int quantityRecieved) { this.quantityRecieved = quantityRecieved; }
+    public void setQuantityReceived(int quantityReceived) { this.quantityReceived = quantityReceived; }
 
     @Override
     public JSONObject serialize() throws JSONException {

@@ -4,31 +4,38 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class SearchPagesActivity extends AppCompatActivity {
+    public enum Mode {
+        NAME_SEARCH,
+        BASKET_SEARCH;
+
+        void putInto(Intent intent) {
+            intent.putExtra(Constants.KEY_PAGE_MODE, this.name());
+        }
+
+        static Mode retrieveFrom(Intent intent) {
+            return Mode.valueOf(intent.getStringExtra(Constants.KEY_PAGE_MODE));
+        }
+    }
+
     private ListView listView;
     private PageViewAdapter pageAdapter;
     private List<DonationPage> pages;
 
     private Basket basket;
     private int contributionMapId;
+    private Mode mode;
 
     public void showHome(View view) {
         startActivity(new Intent(this, HomepageActivity.class));
@@ -59,7 +66,7 @@ public class SearchPagesActivity extends AppCompatActivity {
 
             String text = v.getText().toString();
             try {
-                pages = (basket != null && text.isEmpty()) ? DonationPage.searchBy(basket) : DonationPage.searchBy(text);
+                pages = (mode == Mode.BASKET_SEARCH && text.isEmpty()) ? DonationPage.searchBy(basket) : DonationPage.searchBy(text);
                 pageAdapter = new PageViewAdapter(getApplicationContext(), pages);
                 listView.setAdapter(pageAdapter);
             } catch (ServerResponseException e) {
@@ -71,29 +78,28 @@ public class SearchPagesActivity extends AppCompatActivity {
 
         @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // TODO: The different modes of activities should be handled better than this.
-        // TODO: This should have multiple modes in it to handle the different cases of either from the basket, or by text, currently just by text is handled only, which is wrong
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_pages);
 
-        String mode = getIntent().getStringExtra("Mode");
+        mode = Mode.retrieveFrom(getIntent());
+
         pages = new ArrayList<>();
         EditText searchBar = findViewById(R.id.editTextPageSearch);
+        Contribution contribution;
 
-        if (mode.equals("BasketSearch")) {
-            contributionMapId = getIntent().getIntExtra("ContributionMapId", -1);
-            Contribution contribution = Contribution.getContribution(contributionMapId);
-            basket = contribution.getBasket();
-            searchBar.setOnEditorActionListener(getBasketSearcher());
-            try {
-                pages = DonationPage.searchBy(basket);
-            } catch (ServerResponseException e) {
-                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        switch (mode) {
+            case BASKET_SEARCH: {
+                contributionMapId = getIntent().getIntExtra(Constants.KEY_CONTRIBUTION_MAP_ID, -1);
+                contribution = Contribution.getContribution(contributionMapId);
+                basket = contribution.getBasket();
+                searchBar.setOnEditorActionListener(getBasketSearcher());
+                break;
             }
-        } else if (mode.equals("NameSearch")) {
-            searchBar.setOnEditorActionListener(getNameSearcher());
-        } else {
-            throw new RuntimeException("Big failure");
+            case NAME_SEARCH: {
+                searchBar.setOnEditorActionListener(getNameSearcher());
+                break;
+            }
+            default: throw new RuntimeException("Failed determining mode");
         }
 
         pageAdapter = new PageViewAdapter(getApplicationContext(), pages);
@@ -101,18 +107,13 @@ public class SearchPagesActivity extends AppCompatActivity {
         listView.setAdapter(pageAdapter);
         SearchPagesActivity activity = this;
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: This should send extra stuff if in basket search mode.
-                Intent intent = new Intent(activity, ViewDonationPageActivity.class);
-                intent.putExtra("DonationPageName", pages.get(position).getName());
-                if (mode.equals("BasketSearch")) {
-                    Contribution contribution = Contribution.getContribution(getIntent().getIntExtra("ContributionMapId", -1));
-                    intent.putExtra("ContributionMapId", contributionMapId);
-                }
-                startActivity(intent);
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            Intent intent = new Intent(activity, ViewDonationPageActivity.class);
+            intent.putExtra(Constants.KEY_DONATION_PAGE_NAME, pages.get(position).getName());
+            if (mode == Mode.BASKET_SEARCH) {
+                intent.putExtra(Constants.KEY_CONTRIBUTION_MAP_ID, contributionMapId);
             }
+            startActivity(intent);
         });
 
         Button backButton = findViewById(R.id.back_button);

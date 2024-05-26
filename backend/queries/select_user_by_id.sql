@@ -1,3 +1,3 @@
 SELECT *
 FROM Accounts
-WHERE id = :id;
+WHERE id = ?;

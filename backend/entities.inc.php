@@ -1,6 +1,5 @@
 <?php
 
-/* It's probably convenient to represent the different entities as php objects */
 require_once "user_input.inc.php";
 require_once "error.inc.php";
 require_once "query.php";
@@ -36,7 +35,7 @@ class Account {
 		self::require_login();
 		try {
 			expect_get();
-			echo Database::result_to_json(Database::select(DatabaseQuery::from_file("queries/get_pending_contributions.sql"), "i", self::get_session()["id"]));
+			echo Database::result_to_json(Database::select(DBQuery::from_stored("get_pending_contributions.sql"), "i", self::get_session()["id"]));
 		} catch (Exception $e)  {
 			error_log($e->getMessage());
 			exit_with_status(message: "Server encountered error fetching pending contributions.", status_code: 500);
@@ -64,8 +63,8 @@ class Account {
 		$hashed_password = password_hash(password: $password, algo: PASSWORD_DEFAULT);
 
 		$created_at = new DateTime();
-		$count_users = Database::select(DatabaseQuery::from_file("queries/select_count_accounts.sql"), "", "")->fetch_assoc()["total"];
-		$query = DatabaseQuery::from_file("queries/register_user.sql");
+		$count_users = Database::select(DBQuery::from_stored("select_count_accounts.sql"), "", "")->fetch_assoc()["total"];
+		$query = DBQuery::from_stored("register_user.sql");
 		try  {
 			$id = Database::insert(true, $query, "ssssi", $username, $hashed_password, $phone_number, $biography, $count_users);
 		} catch (Exception $e) {
@@ -125,26 +124,26 @@ class Account {
 			$accepted_contribution_delta += $item.quantity;
 		}
 			
-		$rank_query = DatabaseQuery::from_file("queries/update_account_ranks.sql");
-		$entry_query = DatabaseQuery::from_file("queries/update_page_entries.sql");
+		$rank_query = DBQuery::from_stored("update_account_ranks.sql");
+		$entry_query = DBQuery::from_stored("update_page_entries.sql");
 		try {
 			$old_account_details = Database::select("queries/select_user_by_id", "i", $contribution->poster_id)->fetch_assoc();
 			$old_accepted_contributions = $old_account_details["accepted_contributions"];
 			$account_created_at = $old_account_details["created_at"];
 			$old_accepted_contributions = Database::select(
-				DatabaseQuery::from_file("queries/select_account_contributions.sql"), 
+				DBQuery::from_stored("select_account_contributions.sql"), 
 				"i", 
 				$contribution->poster_id
 			)->fetch_assoc()["value"];
 			$new_accepted_contributions = $old_accepted_contributions + $accepted_contribution_delta;
 			$new_rank = Database::select(
-				DatabaseQuery::from_file("queries/select_account_rank.sql"), 
+				DBQuery::from_stored("select_account_rank.sql"), 
 				"ii", 
 				$old_accepted_contributions, 
 				$new_accepted_contributions)->fetch_assoc()["value"];
 			
 
-			Database::update(true, DatabaseQuery::from_file("queries/update_account_contributions.sql"), "ii", $accepted_contribution_delta, $contribution->poster_id);
+			Database::update(true, DBQuery::from_stored("update_account_contributions.sql"), "ii", $accepted_contribution_delta, $contribution->poster_id);
 
 			Database::update(true, 
 				$rank_query, 
@@ -177,7 +176,7 @@ class Account {
 
 		self::validate_user_login_input($username, $password);
 		$hashed_password = password_hash(password: $password, algo: PASSWORD_DEFAULT);
-		$query = DatabaseQuery::from_file("queries/select_user_by_username.sql");
+		$query = DBQuery::from_stored("select_user_by_username.sql");
 
 		try {
 			$result_set = Database::select($query, "s", $username);
@@ -326,13 +325,13 @@ class DonationPage {
 		validate_basket_content($basket_content);
 
 		try {
-			$query = DatabaseQuery::from_file("queries/insert_donation_page.sql");
+			$query = DBQuery::from_stored("insert_donation_page.sql");
 			$page_id = Database::insert(true, $query, "is", $donatee_id, $name);
 
 			foreach ($basket_content as $item) {
 				$quantity_asked = $item["quantity"];
 				$resource_id = $item["resource_id"];
-				$query = &DatabaseQuery::from_file("queries/insert_donation_page_entry.sql");
+				$query = &DBQuery::from_stored("insert_donation_page_entry.sql");
 				$entry_id = Database::insert(true, $query, "iii", $page_id, $resource_id, $quantity_asked);
 			}
 		} catch (Exception $e) {
@@ -413,7 +412,7 @@ class Contribution {
 
 		try {
 			$query_string = "SELECT * FROM Contributions WHERE Contributions.id = ?";
-			$query = DatabaseQuery::from_string($query_string);
+			$query = DBQuery::from_string($query_string);
 			$result = Database::select($query, "i", $id);
 			$row = $result->fetch_assoc();
 			if (!$row) {
@@ -426,7 +425,7 @@ class Contribution {
 
 			$created_at = $row["created_at"];
 			$query_string = "SELECT * FROM ContributionEntries WHERE ContributionEntries.id = ?";
-			$query = DatabaseQuery::from_string($query_string);
+			$query = DBQuery::from_string($query_string);
 
 			foreach ($raw_items as $raw_item) {
 				$id = $raw_item["id"];
@@ -459,7 +458,6 @@ class Contribution {
 
 	public static function insert_from_json(array $json_object): Contribution {
 		Account::require_login();
-		
 		$basket_content = $json_object["basket"]["content"];
 		$poster_id = $json_object["poster_id"];
 		$recipient_page_id = $json_object["recipient_page_id"];
@@ -482,7 +480,7 @@ class Contribution {
 		
 		Account::require_login_of_user($poster_id);
 
-		$row = Database::select(DatabaseQuery::from_file("queries/select_page_donatee.sql"), "i", $recipient_page_id)->fetch_assoc();
+		$row = Database::select(DBQuery::from_stored("select_page_donatee.sql"), "i", $recipient_page_id)->fetch_assoc();
 		if (!$row) {
 			exit_with_status(message: "Cannot donate to a page that does not exist.", status_code: 400);
 		}
@@ -494,7 +492,7 @@ class Contribution {
 		validate_basket_content($basket_content);
 
 		try {
-			$query = DatabaseQuery::from_file("queries/check_contribution_entry.sql");
+			$query = DBQuery::from_stored("check_contribution_entry.sql");
 			foreach ($basket_content as $item) {
 				$row = Database::select($query, "ii", $recipient_page_id, $item["resource_id"])->fetch_assoc();
 				if (!$row) {
@@ -503,11 +501,11 @@ class Contribution {
 			}
 
 			$created_at = new DateTime();
-			$query = DatabaseQuery::from_file("queries/insert_contribution.sql")	;
+			$query = DBQuery::from_stored("insert_contribution.sql")	;
 			$id = Database::insert(true, $query, "ii", $poster_id, $recipient_page_id);
 			$result_entries = array();
 
-			$query = DatabaseQuery::from_file("queries/insert_contribution_entry.sql");
+			$query = DBQuery::from_stored("insert_contribution_entry.sql");
 			foreach ($basket_content as $item) {
 				$item_id = Database::insert(true, $query, "iii", $item["resource_id"], $id, $item["quantity"]);
 				$entry = new ContributionEntry($item_id, $item["resource_id"], $id, $item["quantity"]);
@@ -540,7 +538,7 @@ class Resources {
 			return self::$resource_set;
 		}
 
-		$query = DatabaseQuery::from_file("queries/select_resources.sql");
+		$query = DBQuery::from_stored("select_resources.sql");
 		return self::$resource_set = Database::select($query, "", "");
 	}
 

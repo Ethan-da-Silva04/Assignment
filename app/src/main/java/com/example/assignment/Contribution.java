@@ -4,6 +4,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +22,9 @@ public class Contribution implements JSONSerializable {
     private int posterId;
     private int recipientPageId;
     private Basket basket;
+
+    // specifically to use for account history
+    private LocalDateTime createdAt;
 
     private Contribution() {
         this.id = 0;
@@ -55,9 +60,15 @@ public class Contribution implements JSONSerializable {
         contributionMap.put(nextMapId++, contribution);
     }
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public static Contribution getContribution(int mapId) {
         return contributionMap.get(mapId);
     }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
     public static Contribution fromSession(int recipientPageId, Basket basket) {
         Contribution contribution = new Contribution();
@@ -105,8 +116,18 @@ public class Contribution implements JSONSerializable {
         int recipientPageId = (int) object.get("recipient_page_id");
         int quantity = (int) object.get("quantity");
 
+        if (object.has("page_name")) {
+            // will be added to a map internal to the DonationPage class
+            new DonationPage(recipientPageId, (int) object.get("donatee_id"), (String) object.get("page_name"));
+        }
+
         contributions.putIfAbsent(contributionId, new Contribution(contributionId, posterId, recipientPageId));
-        Basket basket = contributions.get(contributionId).getBasket();
+        Contribution contribution = contributions.get(contributionId);
+        if (object.has("created_at")) {
+            contribution.setCreatedAt(LocalDateTime.parse((CharSequence) object.get("created_at"), Constants.fromFormatter));
+        }
+
+        Basket basket = contribution.getBasket();
         DonationItem item = new DonationItem(itemId, Resource.getFromId(resourceId), quantity);
         basket.add(item);
     }
@@ -117,11 +138,9 @@ public class Contribution implements JSONSerializable {
         }
     }
 
-    public static List<Contribution> listFromPageMap(Map<Integer, Contribution> pages) {
+    public static List<Contribution> listFromPageMap(Map<Integer, Contribution> contributions) {
         List<Contribution> result = new ArrayList<>();
-        for (Map.Entry<Integer, Contribution> entry : pages.entrySet()) {
-            result.add(entry.getValue());
-        }
+        result.addAll(contributions.values());
         return result;
     }
 
@@ -144,6 +163,8 @@ public class Contribution implements JSONSerializable {
             .put("poster_id", posterId)
             .put("recipient_page_id", recipientPageId);
     }
+
+    public int getRecipientPageId() { return recipientPageId; }
 
     static {
         contributionMap = new HashMap<>();

@@ -34,7 +34,7 @@ public class PageProgressAdapter extends ArrayAdapter<DonationItem> {
         name.setText(item.getName());
 
         ProgressBar progressBar = listItemView.findViewById(R.id.progressBar);
-        progressBar.setProgress(item.getQuantityRecieved() / item.getQuantityAsked());
+        progressBar.setProgress(item.getQuantityReceived() / item.getQuantityAsked());
 
         return listItemView;
     }

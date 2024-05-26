@@ -9,6 +9,5 @@ session_start();
 
 $account = Account::login($username, $password);
 Account::require_login();
-
-echo json_encode([$account]) . "AND ALSO: " . $_SESSION["__user"]->id;
+echo json_encode([$account]);
 ?>

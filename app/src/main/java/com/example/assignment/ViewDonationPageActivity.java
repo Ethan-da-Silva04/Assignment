@@ -12,8 +12,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Map;
-
 public class ViewDonationPageActivity extends AppCompatActivity {
     private DonationPage page;
 
@@ -21,13 +19,13 @@ public class ViewDonationPageActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CreateBasketActivity.class);
         Intent previousIntent = getIntent();
         int mapId;
-        if ((mapId = previousIntent.getIntExtra("ContributionMapId", -1)) != -1) {
-            intent.putExtra("ContributionMapId", mapId);
-            intent.putExtra("Mode", "ContributeWithExisting");
+        if ((mapId = previousIntent.getIntExtra(Constants.KEY_CONTRIBUTION_MAP_ID, -1)) != -1) {
+            intent.putExtra(Constants.KEY_CONTRIBUTION_MAP_ID, mapId);
+            CreateBasketActivity.Mode.CONTRIBUTE_WITH_EXISTING.putInto(intent);
         } else {
-            intent.putExtra("Mode", "ContributeWithNewBasket");
+            CreateBasketActivity.Mode.CONTRIBUTE_WITH_NEW_BASKET.putInto(intent);
         }
-        intent.putExtra("DonationPageName", page.getName());
+        intent.putExtra(Constants.KEY_DONATION_PAGE_NAME, page.getName());
         startActivity(intent);
     }
 
@@ -39,7 +37,7 @@ public class ViewDonationPageActivity extends AppCompatActivity {
     public void showAccountPage(View view) {
         int userId = page.getDonateeId();
         Intent intent = new Intent(this, AccountActivity.class)
-                .putExtra("user_id", userId);
+                .putExtra(Constants.KEY_USER_ID, userId);
         startActivity(intent);
     }
 
@@ -52,24 +50,22 @@ public class ViewDonationPageActivity extends AppCompatActivity {
         backButton.setOnClickListener(new ClickBackListener(this));
 
         Intent intent = getIntent();
-        if (intent.getStringExtra("DonationPageName") != null) {
-            String name = intent.getStringExtra("DonationPageName");
-            page = DonationPage.getPage(name);
+        if (intent.getStringExtra(Constants.KEY_DONATION_PAGE_NAME) == null) {
+            throw new RuntimeException("Missing page name");
+        }
 
-            // TODO: figure what is even happening with this.
-            if (page == null) {
-                return;
-            }
+        String name = intent.getStringExtra(Constants.KEY_DONATION_PAGE_NAME);
+        page = DonationPage.getPage(name);
 
-            for (Map.Entry<String, DonationPage> entry : DonationPage.getEntries()) {
-                System.out.println(entry.getValue());
-            }
+        // TODO: figure what is even happening with this.
+        if (page == null) {
+            return;
+        }
 
-            try {
-                page.fetchPageContent();
-            } catch (ServerResponseException e) {
-                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+        try {
+            page.fetchPageContent();
+        } catch (ServerResponseException e) {
+            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
         ScrollView scrollView = findViewById(R.id.scrollView);

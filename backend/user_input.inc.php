@@ -1,7 +1,7 @@
 <?php
 require_once "error.inc.php";
 
-header("Access-Control-Allow-Origin: *"); // Adjust as needed
+header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Credentials: true");
 
 function get_json_from_post(): array {
@@ -89,7 +89,7 @@ function validate_username(mixed $username) {
 	}
 
 	if (!string_all_of(string: $username, predicate: "is_username_char")) {
-		exit_with_status(message: "Username contains unpermitted characters, username may only consist of alpha-numeric ASCII characters or spaces.", status_code: 400);
+		exit_with_status(message: "Username contains unpermitted characters.", status_code: 400);
 	}
 
 	if (!string_any_of(string: $username, predicate: "ctype_alpha")) {

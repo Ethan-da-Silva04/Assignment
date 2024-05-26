@@ -10,6 +10,18 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class CreatePageActivity extends AppCompatActivity {
+    private static final String formatString = "<!doctype html>" +
+            "<html>" +
+            "<head>" +
+            "<title>%s</title>" +
+            "</head>" +
+            "<body>" +
+            "<h1>%s</h1>" +
+            "<p> %s </p>" +
+            "</body>" +
+            "</html>";
+
+
     public void partialConstructPage(View view) {
         StringBuilder builder = new StringBuilder();
         EditText editName = findViewById(R.id.editTextPageSearch);
@@ -17,18 +29,7 @@ public class CreatePageActivity extends AppCompatActivity {
 
         String name = editName.getText().toString();
         String whyDonate = editWhyDonate.getText().toString();
-        builder.append(String.format(
-                "<!doctype html>" +
-                "<html>" +
-                "<head>" +
-                        "<title>%s</title>" +
-                "</head>" +
-                "<body>" +
-                    "<h1>%s</h1>" +
-                    "<p> %s </p>" +
-                "</body>" +
-                "</html>"
-        ,name, name, whyDonate));
+        builder.append(String.format(formatString, name, name, whyDonate));
         String pageContent = builder.toString();
 
         DonationPage page = new DonationPage(name, pageContent);
@@ -66,9 +67,8 @@ public class CreatePageActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, CreateBasketActivity.class);
 
-        intent.putExtra("DonationPageName", page.getName());
-        intent.putExtra("Mode", "CreatePage");
-
+        intent.putExtra(Constants.KEY_DONATION_PAGE_NAME, page.getName());
+        CreateBasketActivity.Mode.CREATE_PAGE.putInto(intent);
         startActivity(intent);
     }
 

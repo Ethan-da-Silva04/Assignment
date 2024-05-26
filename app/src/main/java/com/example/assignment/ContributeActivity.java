@@ -9,15 +9,14 @@ import android.widget.Button;
 
 public class ContributeActivity extends AppCompatActivity {
     public void showCreateBasket(View view) {
-        System.out.println("Where is my super suit? :3");
         Intent intent = new Intent(this, CreateBasketActivity.class);
-        intent.putExtra("Mode", "PrepareContribution");
+        CreateBasketActivity.Mode.PREPARE_CONTRIBUTION.putInto(intent);
         startActivity(intent);
     }
 
     public void showSearchPages(View view) {
         Intent intent = new Intent(this, SearchPagesActivity.class);
-        intent.putExtra("Mode", "NameSearch");
+        SearchPagesActivity.Mode.NAME_SEARCH.putInto(intent);
         startActivity(intent);
     }
 

@@ -46,40 +46,31 @@ public class BasketListViewAdapter extends ArrayAdapter<DonationItem> {
         Button addButton = convertView.findViewById(R.id.add_button);
         BasketListViewAdapter adapter = this;
 
-        addButton.setOnClickListener(new View.OnClickListener() {
-             @Override
-             public void onClick(View v) {
-                 basket.add(position, 1);
-                 editAmount.setText(String.valueOf(currentQuantity + 1));
-                 adapter.notifyDataSetChanged();
-                 basket.setAdapter(adapter);
-             }
+        addButton.setOnClickListener(v -> {
+            basket.add(position, 1);
+            editAmount.setText(String.valueOf(currentQuantity + 1));
+            adapter.notifyDataSetChanged();
+            basket.setAdapter(adapter);
         });
 
         Button removeButton = convertView.findViewById(R.id.remove_button);
-        removeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                basket.remove(position, 1);
-                editAmount.setText(String.valueOf(currentQuantity - 1));
-                adapter.notifyDataSetChanged();
-                basket.setAdapter(adapter);
-            }
+        removeButton.setOnClickListener(v -> {
+            basket.remove(position, 1);
+            editAmount.setText(String.valueOf(currentQuantity - 1));
+            adapter.notifyDataSetChanged();
+            basket.setAdapter(adapter);
         });
 
 
-        editAmount.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId != EditorInfo.IME_ACTION_DONE && actionId != EditorInfo.IME_NULL) {
-                    return false;
-                }
-
-                int amount = Integer.parseInt(v.getText().toString());
-                basket.setQuantity(position, amount);
-                basket.setAdapter(adapter);
-                return true;
+        editAmount.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId != EditorInfo.IME_ACTION_DONE && actionId != EditorInfo.IME_NULL) {
+                return false;
             }
+
+            int amount = Integer.parseInt(v.getText().toString());
+            basket.setQuantity(position, amount);
+            basket.setAdapter(adapter);
+            return true;
         });
 
         return convertView;
