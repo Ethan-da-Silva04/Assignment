@@ -16,7 +16,6 @@ import android.widget.Toast;
 import java.util.List;
 
 public class HomepageActivity extends AppCompatActivity {
-    private static PendingContributionReceiver contributionReceiver = new PendingContributionReceiver();
     private List<User> searchedUsers;
     private UsersAdapter usersAdapter;
 
@@ -42,9 +41,6 @@ public class HomepageActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if (contributionReceiver == null) {
-            contributionReceiver = new PendingContributionReceiver();
-        }
         // TODO: Add notification viewer
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
@@ -87,9 +83,20 @@ public class HomepageActivity extends AppCompatActivity {
                     .putExtra(Constants.KEY_USER_ID, searchedUsers.get(position).getId());
             startActivity(intent);
         });
-    }
 
-    static {
-        contributionReceiver.start();
+        Button notificationButton = findViewById(R.id.notification_button);
+        notificationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<Contribution> contributions = PendingContributionReceiver.get().dataToList();
+                if (PendingContributionReceiver.get().isEmpty()) {
+                    Toast.makeText(HomepageActivity.this, "No new pending contributions", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Intent intent = new Intent(HomepageActivity.this, PendingListActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 }

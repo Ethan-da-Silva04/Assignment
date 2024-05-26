@@ -43,6 +43,7 @@ public class ViewDonationPageActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // TODO: the basket that is supposed to display is not displaying
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_donation_page);
 
@@ -56,8 +57,6 @@ public class ViewDonationPageActivity extends AppCompatActivity {
 
         String name = intent.getStringExtra(Constants.KEY_DONATION_PAGE_NAME);
         page = DonationPage.getPage(name);
-
-        // TODO: figure what is even happening with this.
         if (page == null) {
             return;
         }
@@ -68,16 +67,16 @@ public class ViewDonationPageActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
-        ScrollView scrollView = findViewById(R.id.scrollView);
-        WebView webView = scrollView.findViewById(R.id.webView);
+        WebView webView = findViewById(R.id.webView);
 
         webView.loadData(page.getContent(), "text/html", "UTF-8");
 
         TextView username = findViewById(R.id.username);
         username.setText(User.getFromId(page.getDonateeId()).getUsername());
 
-        ListView listView = scrollView.findViewById(R.id.listView);
+        ListView listView = findViewById(R.id.listView);
         PageProgressAdapter adapter = new PageProgressAdapter(getApplicationContext(), page);
+        System.out.println(page.getBasket().getItems().size());
         listView.setAdapter(adapter);
     }
 }

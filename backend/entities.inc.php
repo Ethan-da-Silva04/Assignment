@@ -34,8 +34,11 @@ class Account {
 	public static function request_pending_contributions(): void {
 		self::require_login();
 		try {
+			# TODO: this must also show the basket of the contribution even though it does not currently
 			expect_get();
-			echo Database::result_to_json(Database::select(DBQuery::from_stored("get_pending_contributions.sql"), "i", self::get_session()["id"]));
+			$result = Database::result_to_json(Database::select(DBQuery::from_stored("get_pending_contributions.sql"), "i", self::get_session()->id));
+			error_log($result);
+			echo $result;
 		} catch (Exception $e)  {
 			error_log($e->getMessage());
 			exit_with_status(message: "Server encountered error fetching pending contributions.", status_code: 500);
@@ -116,31 +119,40 @@ class Account {
 	}
 
 	public static function accept_contribution(Contribution $contribution): void {
-		// contribution is assumed to be valid here, it just needs insertion.
-		self::require_login($contribution->recipient_id);
+		self::require_login();
+		$row = Database::select(DBQuery::from_stored("select_page_donatee.sql"), "i", $contribution->recipient_page_id)->fetch_assoc();
+		self::require_login($row["donatee_id"]);
+		$pending_status_query = DBQuery::from_stored("select_pending_contribution_by_id.sql");
+		$row = Database::select($pending_status_query, "i", $contribution->id);
+		if (!$row) {
+			exit_with_status("Cannot accept non-pending contribution");
+		}
+		
+
 		$accepted_contribution_delta = 0;
 
-		foreach ($contribution->contents as $item) {
-			$accepted_contribution_delta += $item.quantity;
+		foreach ($contribution->content as $item) {
+			$accepted_contribution_delta += $item->quantity;
 		}
 			
 		$rank_query = DBQuery::from_stored("update_account_ranks.sql");
-		$entry_query = DBQuery::from_stored("update_page_entries.sql");
+		$page_entry_query = DBQuery::from_stored("update_page_entries.sql");
+		$contribution_entry_query = DBQuery::from_stored("insert_accepted_entry.sql");
 		try {
-			$old_account_details = Database::select("queries/select_user_by_id", "i", $contribution->poster_id)->fetch_assoc();
+			$old_account_details = Database::select(DBQuery::from_stored("select_user_by_id.sql"), "i", $contribution->poster_id)->fetch_assoc();
 			$old_accepted_contributions = $old_account_details["accepted_contributions"];
 			$account_created_at = $old_account_details["created_at"];
-			$old_accepted_contributions = Database::select(
-				DBQuery::from_stored("select_account_contributions.sql"), 
-				"i", 
-				$contribution->poster_id
-			)->fetch_assoc()["value"];
 			$new_accepted_contributions = $old_accepted_contributions + $accepted_contribution_delta;
-			$new_rank = Database::select(
-				DBQuery::from_stored("select_account_rank.sql"), 
+			error_log($old_accepted_contributions);
+			$row = Database::select(DBQuery::from_stored("select_account_rank.sql"), 
 				"ii", 
 				$old_accepted_contributions, 
-				$new_accepted_contributions)->fetch_assoc()["value"];
+				$new_accepted_contributions)->fetch_assoc();
+			if (!$row) {
+				exit_with_status("Server is sad :(", status_code: 500);
+			}
+			error_log(json_encode($row));
+			$new_rank = $row["value"];
 			
 
 			Database::update(true, DBQuery::from_stored("update_account_contributions.sql"), "ii", $accepted_contribution_delta, $contribution->poster_id);
@@ -159,10 +171,12 @@ class Account {
 				$new_accepted_contributions
 			);
 
-			foreach ($contribution->contents as $entry) {
-				// TODO: Add adding accepted contribution entries.
-				Database::update(true, $entry_query, "ii", $entry->quantity, $contribution->recipient_page_id);
+			// TODO: Add adding accepted contribution entries.
+			foreach ($contribution->content as $entry) {
+				Database::insert(true, $contribution_entry_query, "i", $entry->id);
+				Database::update(true, $page_entry_query, "ii", $entry->quantity, $contribution->recipient_page_id);
 			}
+			Database::delete(true, DBQuery::from_stored("delete_pending_contribution.sql"), "i", $contribution->id);
 		} catch (Exception $e) {
 			error_log($e->getMessage());
 			exit_with_status(message: "Server is sad, server has failed in updating ranks :(", status_code: 500);
@@ -369,14 +383,14 @@ class Contribution {
 	public int $poster_id;
 	public int $recipient_page_id;
 	public DateTime $created_at;
-	public array $contents;
+	public array $content;
 
-	public function __construct(int $id, int $poster_id, int $recipient_page_id, DateTime $created_at, array $contents) {
+	public function __construct(int $id, int $poster_id, int $recipient_page_id, DateTime $created_at, array $content) {
 		$this->id = $id;
 		$this->poster_id = $poster_id;
 		$this->recipient_page_id = $recipient_page_id;
 		$this->created_at = $created_at;
-		$this->contents = $contents;
+		$this->content = $content;
 	}
 
 	public static function from_json(array $json_object): Contribution {
@@ -385,45 +399,54 @@ class Contribution {
 			exit_with_status(message: "Missing json", status_code: 400);
 		}
 
-		if (!isset($json_object["basket"])) {
+		if ($json_object["basket"] === null) {
 			exit_with_status(message: "Missing basket.", status_code: 400);	
 		}
 
-		$id = $json_object["id"];	
+		$contribution_id = $json_object["id"];	
 		$poster_id = $json_object["poster_id"];
-		$recipient_id = $json_object["recipient_id"];
+		$recipient_page_id = $json_object["recipient_page_id"];
 		$raw_items = $json_object["basket"]["content"];
 		$items = array();
 		$created_at = null;
 
-		if (!is_int($id) || !is_int($poster_id) || !is_int($recipient_id) || $raw_items === null) {
+		error_log(json_encode($json_object));
+
+		if (!is_int($contribution_id) || !is_int($poster_id) || !is_int($recipient_page_id) || $raw_items === null) {
 			exit_with_status("Atleast one item is presented in the wrong format.", status_code: 400);
 		}
-
-		Account::require_login($recipient_id);
 
 		if (!is_array($raw_items) || sizeof($raw_items) == 0)  {
 			exit_with_status("Items are presented in the wrong format.", status_code: 400);
 		}
 
-		if ($recipient_id == $poster_id) {
+		$row = Database::select(DBQuery::from_stored("select_page_donatee.sql"), "i", $recipient_page_id)->fetch_assoc();
+		if (!$row) {
+			exit_with_status(message: "Cannot donate to a page that does not exist.", status_code: 400);
+		}
+		
+		$recipient_account_id = $row["donatee_id"];
+
+		Account::require_login($recipient_account_id);
+
+		if ($recipient_account_id === $poster_id) {
 			exit_with_status(message: "Cannot donate to oneself.", status_code: 400);
 		}
 
 		try {
 			$query_string = "SELECT * FROM Contributions WHERE Contributions.id = ?";
 			$query = DBQuery::from_string($query_string);
-			$result = Database::select($query, "i", $id);
+			$result = Database::select($query, "i", $contribution_id);
 			$row = $result->fetch_assoc();
 			if (!$row) {
 				exit_with_status("Post does not exist.", status_code: 400);
 			}
 
-			if ($row["poster_id"] !== $poster_id || $row["recipient_id"] !== $recipient_id) {
+			if ($row["poster_id"] !== $poster_id || $row["recipient_page_id"] !== $recipient_page_id) {
 				exit_with_status("Mismatch in given id with respect to given poster and recipient id.", status_code: 400);
 			}
 
-			$created_at = $row["created_at"];
+			$created_at = DateTime::createFromFormat('Y-m-d H:i:s', $row["created_at"]);
 			$query_string = "SELECT * FROM ContributionEntries WHERE ContributionEntries.id = ?";
 			$query = DBQuery::from_string($query_string);
 
@@ -452,7 +475,7 @@ class Contribution {
 			exit_with_status("Mismatch in given id with respect to given poster and recipient id.", status_code: 400);
 		}
 		
-		return new self($id, $poster_id, $recipient_id, $created_at, $items);
+		return new self($id, $poster_id, $recipient_page_id, $created_at, $items);
 		
 	}
 
@@ -501,8 +524,10 @@ class Contribution {
 			}
 
 			$created_at = new DateTime();
-			$query = DBQuery::from_stored("insert_contribution.sql")	;
+			$query = DBQuery::from_stored("insert_contribution.sql");
 			$id = Database::insert(true, $query, "ii", $poster_id, $recipient_page_id);
+			$query = DBQuery::from_stored("insert_pending_contribution.sql");
+			Database::insert(true, $query, "i", $id);
 			$result_entries = array();
 
 			$query = DBQuery::from_stored("insert_contribution_entry.sql");

@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class CreatePageActivity extends AppCompatActivity {
+    // TODO: this doesn't work, it's far too closed down to be fun to use or expressive, I need to expand this so that it works for a larger subset of HTML
     private static final String formatString = "<!doctype html>" +
             "<html>" +
             "<head>" +
@@ -17,7 +18,7 @@ public class CreatePageActivity extends AppCompatActivity {
             "</head>" +
             "<body>" +
             "<h1>%s</h1>" +
-            "<p> %s </p>" +
+            "<p>%s</p>" +
             "</body>" +
             "</html>";
 

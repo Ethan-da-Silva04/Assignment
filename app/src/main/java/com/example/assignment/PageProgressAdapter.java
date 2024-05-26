@@ -12,30 +12,33 @@ import java.util.List;
 
 public class PageProgressAdapter extends ArrayAdapter<DonationItem> {
     private List<DonationItem> donationItems;
+    private Context context;
+    private LayoutInflater inflater;
 
     public PageProgressAdapter(Context context, DonationPage page) {
         super(context, 0, page.getBasket().getItems());
         donationItems = page.getBasket().getItems();
+        this.context = context;
+        this.inflater = LayoutInflater.from(context);
+        for (DonationItem item : donationItems) {
+            System.out.println("THESE ARE THE ITEMS :3 :" + item);
+        }
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View listItemView = convertView;
-        if (listItemView == null) {
-            listItemView = LayoutInflater.from(getContext()).inflate(R.layout.page_progress_row, parent, false);
-        }
-
+        convertView = inflater.inflate(R.layout.page_progress_row, parent, false);
         DonationItem item = donationItems.get(position);
 
-        TextView number = listItemView.findViewById(R.id.txt_number);
+        TextView number = convertView.findViewById(R.id.txt_number);
         number.setText(String.valueOf(position + 1));
 
-        TextView name = listItemView.findViewById(R.id.txt_name);
-        name.setText(item.getName());
+        TextView name = convertView.findViewById(R.id.txt_name);
+        name.setText(item.getName() + " " + String.valueOf(item.getQuantityReceived()) + "/" + String.valueOf(item.getQuantityAsked()));
 
-        ProgressBar progressBar = listItemView.findViewById(R.id.progressBar);
-        progressBar.setProgress(item.getQuantityReceived() / item.getQuantityAsked());
+        ProgressBar progressBar = convertView.findViewById(R.id.progressBar);
+        progressBar.setProgress((item.getQuantityReceived() / item.getQuantityAsked()) * 100);
 
-        return listItemView;
+        return convertView;
     }
 }

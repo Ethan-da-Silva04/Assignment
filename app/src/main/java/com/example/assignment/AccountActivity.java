@@ -152,8 +152,12 @@ public class AccountActivity extends AppCompatActivity {
             List<Contribution> contributionList = Contribution.listFromJSONArray(responseData.getJSONArray("contributions"));
             List<DonationPage> pageList = DonationPage.listFromJSONArray(responseData.getJSONArray("pages"));
 
-            JSONArray array = responseData.getJSONArray("accepted_contributions");
+            JSONArray array = new JSONArray();
+            if (responseData.getJSONArray("accepted_contributions").length() > 0) {
+                array = responseData.getJSONArray("accepted_contributions").getJSONArray(0);
+            }
             Set<Integer> accepted = new HashSet<>();
+            System.out.println(array);
 
             for (int i = 0; i < array.length(); i++) {
                 accepted.add((Integer) array.get(i));

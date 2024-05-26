@@ -48,7 +48,7 @@ public class DonationPage implements JSONSerializable {
     }
 
     private static void putPage(String name, DonationPage page) {
-        pendingPages.put(name, page);
+        pendingPages.putIfAbsent(name, page);
     }
 
     public static DonationPage getPage(String name) {
@@ -115,6 +115,7 @@ public class DonationPage implements JSONSerializable {
     }
 
     private static void addSearchQueryResult(JSONObject object, Map<Integer, DonationPage> pages) throws JSONException {
+        System.out.println("QFIOQUHWFOIQUHWVOJNQOFIUHKSANJLKVJHWEOGFIUEWHFLKJWHELKVJHEWOVIUHWKJHFLQKWJHFDQWIOUH");
         int itemId = (int) object.get("id");
         int pageId = (int) object.get("page_id");
         int resourceId = (int) object.get("resource_id");
@@ -130,9 +131,11 @@ public class DonationPage implements JSONSerializable {
             page.setCreatedAt(toSet);
         }
 
-        Basket basket = page.getBasket();
         DonationItem item = new DonationItem(itemId, Resource.getFromId(resourceId), quantityAsked, quantityReceived);
-        basket.add(item);
+        if (!pages.get(pageId).getBasket().add(item)) {
+            throw new RuntimeException("Fuck off");
+        }
+        System.out.println("FOIQWJFOQWIJFOQWIJFOIQWJOFIJQWGWQ: SIZE " + page.getBasket().size());
     }
 
     private static void populateWithResult(Map<Integer, DonationPage> pages, JSONArray array) throws JSONException {

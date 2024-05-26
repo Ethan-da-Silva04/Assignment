@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS Accounts (
 	biography VARCHAR(512) NOT NULL,
 	created_at DATETIME NOT NULL,
 
-	account_rank INT UNIQUE NOT NULL,
+	account_rank INT NOT NULL,
 	accepted_contributions BIGINT UNSIGNED NOT NULL,
 
 	PRIMARY KEY(id)
@@ -51,6 +51,12 @@ CREATE TABLE IF NOT EXISTS Contributions (
 	PRIMARY KEY(id),
 	FOREIGN KEY(poster_id) REFERENCES Accounts(id),
 	FOREIGN KEY(recipient_page_id) REFERENCES DonationPages(id)
+);
+
+CREATE TABLE IF NOT EXISTS PendingContributions (
+	id INT,
+	PRIMARY KEY(id),
+	FOREIGN KEY(id) REFERENCES Contributions(id)
 );
 
 CREATE TABLE IF NOT EXISTS PendingContributions (

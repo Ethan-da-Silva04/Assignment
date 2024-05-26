@@ -55,10 +55,22 @@ public class Contribution implements JSONSerializable {
         putContribution(this);
     }
 
+    public Contribution(int id, Basket basket, int recipientPageId, int posterId) {
+        this.id = id;
+        this.basket = basket;
+        this.recipientPageId =recipientPageId;
+        this.posterId = posterId;
+        putContribution(this);
+    }
+
     private static void putContribution(Contribution contribution) {
         contribution.mapId = nextMapId;
         contributionMap.put(nextMapId++, contribution);
     }
+
+    public int getId() { return id; }
+
+    public int getPosterId() { return  posterId; }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
@@ -78,29 +90,7 @@ public class Contribution implements JSONSerializable {
         return contribution;
     }
 
-    public static Contribution fromAcceptAction(int id, int posterId, int recipientPageId, Basket basket) {
-        Contribution contribution = new Contribution();
-        contribution.id = id;
-        contribution.posterId = posterId;
-        contribution.recipientPageId = recipientPageId;
-        contribution.basket = basket;
-        return contribution;
-    }
-
     public int getMapId() { return mapId; }
-
-    public static Contribution fromJSONObject(JSONObject object) {
-
-        try {
-            int id = (int) object.get("id");
-            int posterId = (int) object.get("poster_id");
-            int recipientPageId = (int) object.get("recipient_page_id");
-            Basket basket = Basket.fromJSONArray((JSONArray) object.get("content"));
-            return new Contribution(id, posterId, recipientPageId, basket);
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public void setId(int id) { this.id = id; }
 
@@ -127,9 +117,8 @@ public class Contribution implements JSONSerializable {
             contribution.setCreatedAt(LocalDateTime.parse((CharSequence) object.get("created_at"), Constants.fromFormatter));
         }
 
-        Basket basket = contribution.getBasket();
         DonationItem item = new DonationItem(itemId, Resource.getFromId(resourceId), quantity);
-        basket.add(item);
+        contributions.get(contributionId).getBasket().add(item);
     }
 
     private static void populateWithResult(Map<Integer, Contribution> contributions, JSONArray array) throws JSONException {
@@ -161,6 +150,7 @@ public class Contribution implements JSONSerializable {
         return new JSONObject()
             .put("basket", basket.serialize())
             .put("poster_id", posterId)
+            .put("id", id)
             .put("recipient_page_id", recipientPageId);
     }
 

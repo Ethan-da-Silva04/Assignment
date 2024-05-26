@@ -18,6 +18,8 @@ import java.util.Map;
 
 /*
     Donation basket to send to server
+    TODO: Basket difference doesn't work
+    TODO: Searching by basket doesn't work
  */
 public class Basket implements JSONSerializable {
     private static final int MAX_RESOURCE = 10000;
@@ -61,12 +63,7 @@ public class Basket implements JSONSerializable {
     public int size() { return items.size(); }
 
     public static Basket difference(Basket fst, Basket snd) {
-        Comparator<DonationItem> comparator = new Comparator<DonationItem>() {
-            @Override
-            public int compare(DonationItem fst, DonationItem snd) {
-                return fst.getResourceId() - snd.getResourceId();
-            }
-        };
+        Comparator<DonationItem> comparator = (fst1, snd1) -> fst1.getResourceId() - snd1.getResourceId();
 
         fst.items.sort(comparator);
         snd.items.sort(comparator);
@@ -77,7 +74,12 @@ public class Basket implements JSONSerializable {
             DonationItem item = result.items.get(i);
             DonationItem otherItem = snd.searchByResource(result.items.get(i).getResource());
 
+            if (otherItem == null) {
+                continue;
+            }
+
             if (otherItem.getQuantity() >= item.getQuantity()) {
+                System.out.println("THIS HAPPENED");
                 result.items.remove(i);
                 i--;
                 continue;
@@ -86,6 +88,8 @@ public class Basket implements JSONSerializable {
             item.setQuantity(item.getQuantity() - otherItem.getQuantity());
         }
 
+        System.out.print("PRINTING THE STUFFS THE DIFFERENCE: ");
+        result.items.forEach(System.out::println);
         return result;
     }
 

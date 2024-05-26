@@ -10,17 +10,28 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BasketListViewAdapter extends ArrayAdapter<DonationItem> {
     private Basket basket;
     private Context context;
+    private Map<Integer, Integer> referenceMaxima = null;
 
     public BasketListViewAdapter(@NonNull Context context, Basket basket) {
         super(context, R.layout.basket_list_row, basket.getItems());
         this.context = context;
         this.basket = basket;
+    }
+
+    public void setReferenceMaxima(Map<Integer, Integer> referenceMaxima) {
+        this.referenceMaxima = referenceMaxima;
     }
 
     @Override
@@ -31,7 +42,7 @@ public class BasketListViewAdapter extends ArrayAdapter<DonationItem> {
 
         int currentQuantity = basket.get(position).getQuantity();
 
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(LoginActivity.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(CreateBasketActivity.LAYOUT_INFLATER_SERVICE);
         convertView = inflater.inflate(R.layout.basket_list_row, null);
 
         TextView number = convertView.findViewById(R.id.txt_number);
@@ -47,6 +58,11 @@ public class BasketListViewAdapter extends ArrayAdapter<DonationItem> {
         BasketListViewAdapter adapter = this;
 
         addButton.setOnClickListener(v -> {
+            int itemId = basket.get(position).getResourceId();
+            if (referenceMaxima != null && basket.get(position).getQuantity() + 1 > referenceMaxima.getOrDefault(itemId, 0)) {
+                Toast.makeText(context, "Cannot exceed promised quantity", Toast.LENGTH_SHORT).show();
+                return;
+            }
             basket.add(position, 1);
             editAmount.setText(String.valueOf(currentQuantity + 1));
             adapter.notifyDataSetChanged();
@@ -68,6 +84,16 @@ public class BasketListViewAdapter extends ArrayAdapter<DonationItem> {
             }
 
             int amount = Integer.parseInt(v.getText().toString());
+            int itemId = basket.get(position).getResourceId();
+            if (referenceMaxima != null) {
+                // items cannot be added if they are not contained within the referenceMaxima, so only need normal get
+                if (amount > referenceMaxima.get(itemId)) {
+                    Toast.makeText(context, "Cannot exceed promised quantity", Toast.LENGTH_SHORT).show();
+                }
+                basket.setQuantity(position, Math.min(referenceMaxima.get(itemId), amount));
+                basket.setAdapter(adapter);
+                return true;
+            }
             basket.setQuantity(position, amount);
             basket.setAdapter(adapter);
             return true;

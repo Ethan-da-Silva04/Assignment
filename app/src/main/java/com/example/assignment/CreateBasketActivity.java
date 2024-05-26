@@ -14,20 +14,25 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class CreateBasketActivity extends AppCompatActivity {
     public enum Mode {
         CONTRIBUTE_WITH_NEW_BASKET,
         CONTRIBUTE_WITH_EXISTING,
         PREPARE_CONTRIBUTION,
+        PENDING_CONTRIBUTION,
         CREATE_PAGE;
 
         void putInto(Intent intent) {
-            System.out.println("PUTTING " + this.name());
             intent.putExtra(Constants.KEY_PAGE_MODE, this.name());
         }
 
         static Mode retrieveFrom(Intent intent) {
-            System.out.println("RETRIEVING " + intent.getStringExtra(Constants.KEY_PAGE_MODE));
             return Mode.valueOf(intent.getStringExtra(Constants.KEY_PAGE_MODE));
         }
     }
@@ -57,6 +62,7 @@ public class CreateBasketActivity extends AppCompatActivity {
             page.setId((Integer) response.getData().getJSONObject(0).get("id"));
         } catch (ServerResponseException e) {
             ServerExceptionHandler.handle(getApplicationContext(), e);
+            return;
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
@@ -81,16 +87,22 @@ public class CreateBasketActivity extends AppCompatActivity {
             }
 
             this.contribution.getBasket().subtract(basket);
-
-            Intent intent = new Intent(CreateBasketActivity.this, SearchPagesActivity.class)
-                    .putExtra(Constants.KEY_CONTRIBUTION_MAP_ID, contribution.getMapId());
-            SearchPagesActivity.Mode.BASKET_SEARCH.putInto(intent);
-            startActivity(intent);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         } catch (ServerResponseException e) {
             ServerExceptionHandler.handle(getApplicationContext(), e);
+            return;
         }
+
+        Intent intent = new Intent(CreateBasketActivity.this, SearchPagesActivity.class)
+                .putExtra(Constants.KEY_CONTRIBUTION_MAP_ID, contribution.getMapId())
+                .putExtra(Constants.KEY_DONATION_PAGE_NAME, page.getName());
+        if (mode == Mode.CONTRIBUTE_WITH_EXISTING) {
+            SearchPagesActivity.Mode.BASKET_SEARCH.putInto(intent);
+        } else {
+            SearchPagesActivity.Mode.NAME_SEARCH.putInto(intent);
+        }
+        startActivity(intent);
     }
 
     public void prepareContribution(View view) {
@@ -99,6 +111,58 @@ public class CreateBasketActivity extends AppCompatActivity {
                 .putExtra(Constants.KEY_CONTRIBUTION_MAP_ID, contribution.getMapId());
         SearchPagesActivity.Mode.BASKET_SEARCH.putInto(intent);
         startActivity(intent);
+    }
+
+    public void acceptContribution(View view) {
+        // TODO: test me
+        try {
+            Contribution modified = new Contribution(contribution.getId(), basket, contribution.getRecipientPageId(), contribution.getPosterId());
+            ServerResponse response = WebClient.postJSON("accept_contribution.php", modified.serialize());
+            Toast.makeText(this, "Contribution successfully accepted!", Toast.LENGTH_SHORT).show();
+            System.out.println(response.getData());
+        } catch (ServerResponseException e) {
+            ServerExceptionHandler.handle(getApplicationContext(), e);
+            return;
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setListViewForPending() {
+        Map<Integer, Integer> referenceMaxima = new HashMap<>();
+
+        for (DonationItem item : basket.getItems()) {
+            referenceMaxima.put(item.getResourceId(), item.getQuantity());
+        }
+
+        basketAdapter.setReferenceMaxima(referenceMaxima);
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            int itemId = basket.get(position).getResourceId();
+            if (basket.get(position).getQuantity() + 1 > referenceMaxima.getOrDefault(itemId, 0)) {
+                Toast.makeText(getApplicationContext(), "Cannot exceed promised quantity", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            basket.add(position, 1);
+        });
+
+        listView.setOnItemLongClickListener((parent, view, position, id) -> {
+            basket.removeAll(position);
+            return true;
+        });
+
+        basket.setListView(listView);
+
+        autoCompleteText.setOnItemClickListener((parent, view, position, id) -> {
+            String resourceName = parent.getItemAtPosition(position).toString();
+            Resource resource = Resource.getFromName(resourceName);
+            int itemId = resource.getId();
+            if (!referenceMaxima.containsKey(itemId)) {
+                Toast.makeText(getApplicationContext(), "Cannot add an item not within the original basket.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            basket.add(resource, 1);
+            basket.setAdapter(basketAdapter);
+        });
     }
 
     @Override
@@ -148,12 +212,26 @@ public class CreateBasketActivity extends AppCompatActivity {
                 next.setOnClickListener(v -> postPage(v));
                 break;
             }
+
+            case PENDING_CONTRIBUTION: {
+                next.setText("Accept Contribution");
+                contribution = Contribution.getContribution(intent.getIntExtra(Constants.KEY_CONTRIBUTION_MAP_ID, -1));
+                basket.getItems().addAll(contribution.getBasket().getItems());
+                next.setOnClickListener(v -> acceptContribution(v));
+                break;
+            }
             default: throw new RuntimeException("Failed determining page mode: " + mode);
         }
 
         listView = findViewById(R.id.list_view);
+
         basketAdapter = new BasketListViewAdapter(getApplicationContext(), basket);
         listView.setAdapter(basketAdapter);
+
+        if (mode == Mode.PENDING_CONTRIBUTION) {
+            setListViewForPending();
+            return;
+        }
 
         listView.setOnItemClickListener((parent, view, position, id) -> basket.add(position, 1));
 
@@ -163,6 +241,7 @@ public class CreateBasketActivity extends AppCompatActivity {
         });
 
         basket.setListView(listView);
+
         autoCompleteText.setOnItemClickListener((parent, view, position, id) -> {
             String resourceName = parent.getItemAtPosition(position).toString();
             basket.add(Resource.getFromName(resourceName), 1);

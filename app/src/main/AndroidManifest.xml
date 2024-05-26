@@ -14,6 +14,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".PendingBasketActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PendingListActivity"
+            android:exported="false" />
+        <activity
             android:name=".ContributeActivity"
             android:exported="false" />
         <activity

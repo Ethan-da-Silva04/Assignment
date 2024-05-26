@@ -13,14 +13,14 @@ if (!is_int($account_id)) {
 // if account_id does not exist within the Accounts table, $result will be a collection of empty sets
 $result = array();
 $page_entries_result_set = Database::select(
-			DatabaseQuery::from_file("queries/select_account_pages.sql"), 
+			DBQuery::from_stored("select_account_pages.sql"), 
 			"i", 
 			$account_id);
 $contribution_entries_result_set = Database::select(
-				DatabaseQuery::from_file("queries/select_account_contributions.sql"), 
+				DBQuery::from_stored("select_account_contributions.sql"), 
 				"i", 
 				$account_id);
-$accepted_contributions = Database::select(DatabaseQuery::from_file("queries/select_account_accepted.sql"), "i", $account_id)->fetch_all();
+$accepted_contributions = Database::select(DBQuery::from_stored("select_account_accepted.sql"), "i", $account_id)->fetch_all();
 $result["pages"] = array();
 $result["contributions"] = array();
 # this should just be an integer array

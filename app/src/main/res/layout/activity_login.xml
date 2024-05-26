@@ -35,7 +35,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="64dp"
-        android:autoSizeMaxTextSize="70sp"
+        android:autoSizeMaxTextSize="65dp"
         android:autoSizeMinTextSize="12sp"
         android:autoSizeTextType="uniform"
         android:rotation="0"

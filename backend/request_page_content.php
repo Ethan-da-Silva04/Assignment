@@ -10,7 +10,7 @@ if ($id === null || !is_int($id)) {
 	exit_with_status(message: "Expected page id", status_code: 400);
 }
 
-$query_result = Database::select(DatabaseQuery::from_file("queries/select_user_from_page.sql"), "i", $id);
+$query_result = Database::select(DBQuery::from_stored("select_user_from_page.sql"), "i", $id);
 $row = $query_result->fetch_assoc();
 if (!$row) {
 	exit_with_status(message: "id not associated with any item", status_code: 400);

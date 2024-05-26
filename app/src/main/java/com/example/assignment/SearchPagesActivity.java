@@ -76,7 +76,7 @@ public class SearchPagesActivity extends AppCompatActivity {
         };
     }
 
-        @Override
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_pages);
@@ -89,9 +89,15 @@ public class SearchPagesActivity extends AppCompatActivity {
 
         switch (mode) {
             case BASKET_SEARCH: {
+
                 contributionMapId = getIntent().getIntExtra(Constants.KEY_CONTRIBUTION_MAP_ID, -1);
                 contribution = Contribution.getContribution(contributionMapId);
                 basket = contribution.getBasket();
+                try {
+                    pages = DonationPage.searchBy(basket);
+                } catch (ServerResponseException e) {
+                    ServerExceptionHandler.handle(getApplicationContext(), e);
+                }
                 searchBar.setOnEditorActionListener(getBasketSearcher());
                 break;
             }

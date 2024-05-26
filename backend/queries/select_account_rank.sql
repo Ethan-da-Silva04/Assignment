@@ -1,4 +1,4 @@
-SELECT MAX(account_rank) AS value
+SELECT MIN(account_rank) AS value
 FROM Accounts
-WHERE accepted_contributions BETWEEN ? + 1 AND ?
+WHERE accepted_contributions BETWEEN ? AND ?
 LIMIT 1;
