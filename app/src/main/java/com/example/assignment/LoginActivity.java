@@ -44,7 +44,7 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(intent);
             return;
         } catch (ServerResponseException e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            ServerExceptionHandler.handle(LoginActivity.this, e);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

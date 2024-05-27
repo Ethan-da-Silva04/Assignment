@@ -44,7 +44,7 @@ public class SignupActivity extends AppCompatActivity {
             Intent intent = new Intent(this, HomepageActivity.class);
             startActivity(intent);
         } catch (ServerResponseException e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            ServerExceptionHandler.handle(SignupActivity.this, e);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

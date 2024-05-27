@@ -11,4 +11,6 @@ public class Constants {
 
     public static final DateTimeFormatter fromFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter toFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+    public static final boolean DEBUG = false;
 }

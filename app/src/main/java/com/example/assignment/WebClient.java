@@ -30,7 +30,7 @@ import java.lang.RuntimeException;
 
 public class WebClient {
     private static final OkHttpClient client;
-    private static final String serverURL = "http://192.168.1.105:8000/";
+    private static final String serverURL = (Constants.DEBUG) ? "http://192.168.1.105:8000/" : "https://lamp.ms.wits.ac.za/home/s2710345/";
 
     private static final MediaType JSON = MediaType.get("application/json");
 

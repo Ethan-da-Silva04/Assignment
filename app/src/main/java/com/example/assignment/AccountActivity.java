@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ShareCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -141,6 +142,20 @@ public class AccountActivity extends AppCompatActivity {
                 editBiography.setFocusableInTouchMode(false);
 
                 return true;
+            });
+
+            rank.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String content = "Check out ShareCycle! Try beat my rank of being number #" + UserSession.getData().getRank() + ". Good luck!";
+                    String mimeType = "text/plain";
+                    ShareCompat.IntentBuilder
+                            .from(AccountActivity.this)
+                            .setType(mimeType)
+                            .setChooserTitle("Share via")
+                            .setText(content)
+                            .startChooser();
+                }
             });
         }
 
